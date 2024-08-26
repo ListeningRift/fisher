@@ -26,21 +26,27 @@ const goForward = () => {
   webviewRef.goForward()
   url.value = webviewRef.getURL()
 }
+const reload = () => {
+  webviewRef.reload()
+}
 </script>
 
 <template>
   <div class="browser">
     <div class="url-bar-trigger" @mouseenter="handleMouseEnter"></div>
     <div :style="{ display: urlShow ? 'flex' : 'none' }" class="url-bar" @mouseleave="urlShow = false">
-      <div class="url-bar-button" @click="goBack">
+      <div class="url-bar-button left-button" @click="goBack">
         <i class="arrow go-back"></i>
       </div>
-      <div class="url-bar-button" @click="goForward">
+      <div class="url-bar-button left-button" @click="goForward">
         <i class="arrow go-forward"></i>
       </div>
       <a-input v-model:value="url"></a-input>
-      <div class="url-bar-button go-to-button" @click="handleUrlChange">
+      <div class="url-bar-button right-button" @click="handleUrlChange">
         <i class="go-to"></i>
+      </div>
+      <div class="url-bar-button right-button" @click="reload">
+        <i class="reload"></i>
       </div>
     </div>
     <webview class="webview" src="https://www.bilibili.com/" allowpopups frameborder="0"></webview>
@@ -80,15 +86,16 @@ const goForward = () => {
     flex-shrink: 0;
     width: 24px;
     height: 24px;
-    margin-right: 8px;
     border-radius: 4px;
 
     &:hover {
       background: #E5E5E5;
     }
 
-    &.go-to-button {
-      margin-right: 0;
+    &.left-button {
+      margin-right: 8px;
+    }
+    &.right-button {
       margin-left: 8px;
     }
   }
@@ -112,6 +119,12 @@ const goForward = () => {
     width: 24px;
     height: 24px;
     background: url(../assets/go.svg) no-repeat center center / 18px;
+  }
+  .reload {
+    display: block;
+    width: 24px;
+    height: 24px;
+    background: url(../assets/reload.svg) no-repeat center center / 18px;
   }
 
   .ant-input {

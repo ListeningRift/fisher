@@ -16,7 +16,9 @@ export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
 
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 'public') : RENDERER_DIST
 
-const store = new Store()
+const store = new Store({
+  cwd: process.env.APP_ROOT
+})
 
 let win: BrowserWindow | null
 
