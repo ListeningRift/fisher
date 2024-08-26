@@ -1,7 +1,7 @@
 // @see - https://www.electron.build/configuration/configuration
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "YourAppID",
+  "appId": "com.rift.fisher",
   "asar": true,
   "productName": "Fisher",
   "directories": {
@@ -15,19 +15,15 @@
     "target": [
       "dmg"
     ],
-    "artifactName": "${productName}-${version}-Installer.${ext}"
+    "artifactName": "${productName}-${version}-Installer.${ext}",
+    "icon": "public/logo.png",
   },
   "win": {
     "target": [
-      {
-        "target": "nsis",
-        "arch": [
-          "x64"
-        ]
-      },
       "portable"
     ],
-    "artifactName": "${productName}-${version}-Setup.${ext}"
+    "artifactName": "${productName}-${version}-Setup.${ext}",
+    "icon": "public/logo.png",
   },
   "nsis": {
     "oneClick": false,
