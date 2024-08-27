@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Form as AForm, FormItem as AFormItem, Input as AInput, Button as AButton } from 'ant-design-vue';
+import { Form as AForm, FormItem as AFormItem, Input as AInput, Button as AButton } from 'ant-design-vue'
 
 const formData = ref({
   shortcuts: {
@@ -20,14 +20,29 @@ function cancel() {
 
 <template>
   <div class="settings">
-    <a-form :model="formData" :label-col="{ span: 4 }">
-      <a-form-item name="shortcuts.bossKey" label="Boss Key">
+    <a-form
+      :model="formData"
+      :label-col="{ span: 4 }"
+    >
+      <a-form-item
+        name="shortcuts.bossKey"
+        label="Boss Key"
+      >
         <a-input v-model:value="formData.shortcuts.bossKey"></a-input>
       </a-form-item>
     </a-form>
     <div class="button-container">
-      <a-button class="submit-button" type="primary" @click="save">确认</a-button>
-      <a-button class="cancel-button" @click="cancel">取消</a-button>
+      <a-button
+        class="submit-button"
+        type="primary"
+        @click="save"
+        >确认</a-button
+      >
+      <a-button
+        class="cancel-button"
+        @click="cancel"
+        >取消</a-button
+      >
     </div>
   </div>
 </template>
@@ -37,7 +52,7 @@ function cancel() {
   padding: 64px;
   width: calc(100% - 128px);
   height: 100%;
-  background: #FFF;
+  background: #fff;
 }
 
 :deep(.ant-form-item-label) {
@@ -60,7 +75,7 @@ function cancel() {
 }
 
 .submit-button {
-  background: #3A82FE;
+  background: #3a82fe;
 }
 
 .cancel-button {

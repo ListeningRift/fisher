@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from 'vue'
 import browser from './components/browser.vue'
 import settings from './components/settings.vue'
 
@@ -16,14 +16,16 @@ window.ipcRenderer.on('change-page', (_, page) => {
 </script>
 
 <template>
-  <div class="move-bar" v-dragWindow>
+  <div
+    v-dragWindow
+    class="move-bar"
+  >
     <div class="move-bar-line"></div>
   </div>
   <component :is="pageMap[currentPage]"></component>
 </template>
 
 <style scoped>
-
 .move-bar {
   display: flex;
   align-items: center;
@@ -43,7 +45,7 @@ window.ipcRenderer.on('change-page', (_, page) => {
 
   &:hover {
     .move-bar-line {
-      background: #3A82FE;
+      background: #3a82fe;
     }
   }
 }

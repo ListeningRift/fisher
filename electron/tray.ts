@@ -1,6 +1,6 @@
+import path from 'node:path'
 import { app, Menu, nativeImage, Tray } from 'electron'
 import type { BrowserWindow, MenuItemConstructorOptions } from 'electron'
-import path from 'node:path'
 
 let tray: Tray
 
@@ -22,7 +22,7 @@ export default function createTray(win: BrowserWindow | null) {
     { label: '显示', click: () => win?.show() },
     { label: '退出', click: () => app.quit() },
     { label: '置顶', click: () => setAlwaysOnTop(win!) },
-    { label: '设置', click: () => openSettings(win!) },
+    { label: '设置', click: () => openSettings(win!) }
   ]
 
   const contextMenu = Menu.buildFromTemplate(menuList)
@@ -31,6 +31,6 @@ export default function createTray(win: BrowserWindow | null) {
     win?.show()
   })
   tray.on('right-click', () => {
-    tray?.popUpContextMenu(contextMenu);
+    tray?.popUpContextMenu(contextMenu)
   })
 }

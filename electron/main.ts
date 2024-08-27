@@ -28,8 +28,8 @@ function createWindow() {
     alwaysOnTop: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
-      webviewTag: true,
-    },
+      webviewTag: true
+    }
   })
   dragWindow(win)
   win.setSkipTaskbar(true)
@@ -49,7 +49,7 @@ function createWindow() {
       webContents.setWindowOpenHandler(({ url }) => {
         webContents.loadURL(url)
         return { action: 'deny' }
-      });
+      })
     }
   })
 
@@ -59,8 +59,6 @@ function createWindow() {
     win.loadFile(path.join(RENDERER_DIST, 'index.html'))
   }
 }
-
-
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits

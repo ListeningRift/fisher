@@ -33,23 +33,47 @@ const reload = () => {
 
 <template>
   <div class="browser">
-    <div class="url-bar-trigger" @mouseenter="handleMouseEnter"></div>
-    <div :style="{ display: urlShow ? 'flex' : 'none' }" class="url-bar" @mouseleave="urlShow = false">
-      <div class="url-bar-button left-button" @click="goBack">
+    <div
+      class="url-bar-trigger"
+      @mouseenter="handleMouseEnter"
+    ></div>
+    <div
+      :style="{ display: urlShow ? 'flex' : 'none' }"
+      class="url-bar"
+      @mouseleave="urlShow = false"
+    >
+      <div
+        class="url-bar-button left-button"
+        @click="goBack"
+      >
         <i class="arrow go-back"></i>
       </div>
-      <div class="url-bar-button left-button" @click="goForward">
+      <div
+        class="url-bar-button left-button"
+        @click="goForward"
+      >
         <i class="arrow go-forward"></i>
       </div>
       <a-input v-model:value="url"></a-input>
-      <div class="url-bar-button right-button" @click="handleUrlChange">
+      <div
+        class="url-bar-button right-button"
+        @click="handleUrlChange"
+      >
         <i class="go-to"></i>
       </div>
-      <div class="url-bar-button right-button" @click="reload">
+      <div
+        class="url-bar-button right-button"
+        @click="reload"
+      >
         <i class="reload"></i>
       </div>
     </div>
-    <webview class="webview" src="https://www.bilibili.com/" allowpopups frameborder="0"></webview>
+    <webview
+      class="webview"
+      src="https://www.bilibili.com/"
+      allowpopups
+      frameborder="0"
+    ></webview>
   </div>
 </template>
 
@@ -89,7 +113,7 @@ const reload = () => {
     border-radius: 4px;
 
     &:hover {
-      background: #E5E5E5;
+      background: #e5e5e5;
     }
 
     &.left-button {

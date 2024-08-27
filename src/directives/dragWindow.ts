@@ -1,7 +1,7 @@
 const dropWindow = {
   mounted(el: HTMLElement) {
     //按下鼠标左键
-    el.addEventListener('mousedown', (e) => {
+    el.addEventListener('mousedown', e => {
       if (e.buttons == 1) {
         winMoveStart() //开始刷新屏幕位置
         el.addEventListener('mousemove', mousemove)
