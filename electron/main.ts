@@ -1,10 +1,11 @@
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { app, BrowserWindow, ipcMain, Menu } from 'electron'
+import { app, BrowserWindow, Menu } from 'electron'
 import Store from 'electron-store'
 import dragWindow from './dragWindow'
 import createTray from './tray'
 import { registerGlobalShortCuts } from './shortcuts'
+import { storeEvent, changePageEvent, updateSettingsEvent, openUrlInCurrentWindow } from './events'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -25,33 +26,19 @@ function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
     frame: false,
-    alwaysOnTop: true,
+    skipTaskbar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
       webviewTag: true
-    }
+    },
+    alwaysOnTop: store.get('common.alwaysOnTop', true) as boolean
   })
+
   dragWindow(win)
-  win.setSkipTaskbar(true)
-
-  ipcMain.on('getStoreValue', (event, key, defaultValue) => {
-    event.returnValue = store.get(key, defaultValue)
-  })
-  ipcMain.on('setStoreValue', (_, key, value) => {
-    store.set(key, value)
-  })
-  ipcMain.on('change-page', (_, page) => {
-    win?.webContents.send('change-page', page)
-  })
-
-  app.on('web-contents-created', (_, webContents) => {
-    if (webContents.getType() === 'webview') {
-      webContents.setWindowOpenHandler(({ url }) => {
-        webContents.loadURL(url)
-        return { action: 'deny' }
-      })
-    }
-  })
+  storeEvent(store)
+  changePageEvent(win)
+  updateSettingsEvent(win, store)
+  openUrlInCurrentWindow()
 
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)

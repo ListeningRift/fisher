@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import browser from './components/browser.vue'
-import settings from './components/settings.vue'
+import browser from './pages/browser.vue'
+import settings from './pages/settings.vue'
 
 const currentPage = ref('browser')
 

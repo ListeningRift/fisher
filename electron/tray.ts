@@ -19,10 +19,10 @@ export default function createTray(win: BrowserWindow | null) {
   tray.setToolTip('Fisher')
 
   const menuList: MenuItemConstructorOptions[] = [
+    { label: '设置', click: () => openSettings(win!) },
+    { type: 'separator' },
     { label: '显示', click: () => win?.show() },
-    { label: '退出', click: () => app.quit() },
-    { label: '置顶', click: () => setAlwaysOnTop(win!) },
-    { label: '设置', click: () => openSettings(win!) }
+    { label: '退出', role: 'quit', click: () => app.quit() }
   ]
 
   const contextMenu = Menu.buildFromTemplate(menuList)

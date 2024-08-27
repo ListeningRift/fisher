@@ -1,0 +1,141 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { Form as AForm, FormItem as AFormItem, Button as AButton, Switch as ASwitch } from 'ant-design-vue'
+import shortcutsInput from '../components/shortcutsInput.vue'
+
+const formData = ref({
+  common: {
+    alwaysOnTop: window.ipcRenderer.getStoreValue('common.alwaysOnTop', true),
+    openAtLogin: window.ipcRenderer.getStoreValue('common.openAtLogin', false)
+  },
+  shortcuts: {
+    bossKey: window.ipcRenderer.getStoreValue('shortcuts.bossKey', 'Alt+CommandOrControl+Z') as string
+  }
+})
+
+function save() {
+  window.ipcRenderer.setStoreValue('shortcuts.bossKey', formData.value.shortcuts.bossKey)
+  window.ipcRenderer.setStoreValue('common.alwaysOnTop', formData.value.common.alwaysOnTop)
+  window.ipcRenderer.setStoreValue('common.openAtLogin', formData.value.common.openAtLogin)
+
+  window.ipcRenderer.send('update-settings')
+  window.ipcRenderer.send('change-page', 'browser')
+}
+
+function cancel() {
+  window.ipcRenderer.send('change-page', 'browser')
+}
+</script>
+
+<template>
+  <div class="settings">
+    <a-form
+      :model="formData"
+      :label-col="{ span: 4 }"
+    >
+      <div class="settings-group">
+        <div class="settings-group-title">基础设置</div>
+        <a-form-item
+          name="common.alwaysOnTop"
+          label="窗口置顶"
+        >
+          <a-switch v-model:checked="formData.common.alwaysOnTop"></a-switch>
+        </a-form-item>
+        <a-form-item
+          name="common.openAtLogin"
+          label="开机自启动"
+        >
+          <a-switch v-model:checked="formData.common.openAtLogin"></a-switch>
+        </a-form-item>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-title">快捷键</div>
+        <a-form-item
+          name="shortcuts.bossKey"
+          label="Boss Key"
+        >
+          <!-- <a-input v-model:value="formData.shortcuts.bossKey"></a-input> -->
+          <shortcuts-input v-model:value="formData.shortcuts.bossKey"></shortcuts-input>
+        </a-form-item>
+      </div>
+    </a-form>
+    <div class="button-container">
+      <a-button
+        class="submit-button"
+        type="primary"
+        @click="save"
+        >确认</a-button
+      >
+      <a-button
+        class="cancel-button"
+        @click="cancel"
+        >取消</a-button
+      >
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.settings {
+  padding: 64px;
+  width: calc(100% - 128px);
+  min-width: 600px;
+  height: 100%;
+  background: #fff;
+}
+
+:deep(.ant-form-item-label) {
+  display: block !important;
+  flex: 0 0 16.666666666666664% !important;
+  max-width: 16.666666666666664% !important;
+  margin-right: 8px !important;
+  text-align: end !important;
+}
+
+:deep(.ant-form-item-control) {
+  flex-basis: 0 !important;
+  flex-grow: 1 !important;
+}
+
+.settings-group {
+  &:not(:last-child) {
+    margin-bottom: 16px;
+  }
+
+  .settings-group-title {
+    position: relative;
+    margin-bottom: 16px;
+    padding-left: 10px;
+    height: 40px;
+    font-size: 16px;
+    line-height: 40px;
+    background: #f6f6f6;
+    border-radius: 4px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 0;
+      width: 2px;
+      height: 16px;
+      background: #3a82fe;
+      border-radius: 2px;
+    }
+  }
+}
+
+.button-container {
+  margin-top: 32px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.submit-button {
+  background: #3a82fe;
+}
+
+.cancel-button {
+  margin-left: 24px;
+}
+</style>
