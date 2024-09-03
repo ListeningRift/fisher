@@ -68,12 +68,14 @@ const reload = () => {
         <i class="reload"></i>
       </div>
     </div>
-    <webview
-      class="webview"
-      src="https://www.bilibili.com/"
-      allowpopups
-      frameborder="0"
-    ></webview>
+    <div class="webview-wrapper">
+      <webview
+        class="webview"
+        src="https://www.bilibili.com/"
+        allowpopups
+        frameborder="0"
+      ></webview>
+    </div>
   </div>
 </template>
 
@@ -155,6 +157,12 @@ const reload = () => {
     width: 100%;
     height: 32px;
   }
+}
+
+.webview-wrapper {
+  width: calc(100% - 10px);
+  height: calc(100% - 4px);
+  padding: 0 5px 4px;
 }
 
 .webview {

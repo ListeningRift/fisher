@@ -25,5 +25,9 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   },
   setStoreValue: (key: string, value: any) => {
     ipcRenderer.send('setStoreValue', key, value)
+  },
+
+  log(...args: Parameters<typeof console.log>) {
+    ipcRenderer.send('log', ...args)
   }
 })

@@ -1,35 +1,60 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import browser from './pages/browser.vue'
-import settings from './pages/settings.vue'
+import { pageMap } from './contants'
+import type { Pages } from './contants'
 
-const currentPage = ref('browser')
+const currentPage = ref<Pages>('browser')
 
-const pageMap: Record<string, any> = {
-  browser,
-  settings
-}
+const showMainWindow = ref(false)
 
 window.ipcRenderer.on('change-page', (_, page) => {
   currentPage.value = page
 })
+
+const onMouseLeaveWindow = () => {
+  if (currentPage.value === 'settings') {
+    return
+  }
+  window.ipcRenderer.send('trigger-mode-leave')
+  showMainWindow.value = false
+}
 </script>
 
 <template>
   <div
-    v-dragWindow
-    class="move-bar"
+    class="main-window"
+    @mouseleave="onMouseLeaveWindow"
   >
-    <div class="move-bar-line"></div>
+    <div
+      v-dragWindow
+      class="move-bar"
+    >
+      <div class="move-bar-line"></div>
+    </div>
+    <component
+      :is="pageMap[page as keyof typeof pageMap]"
+      v-for="page in Object.keys(pageMap)"
+      v-show="page === currentPage"
+      :key="page"
+    ></component>
   </div>
-  <component :is="pageMap[currentPage]"></component>
 </template>
 
 <style scoped>
+.main-window {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: #333333;
+}
+
 .move-bar {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   width: 100%;
   height: 16px;
   background: #333333;

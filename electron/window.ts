@@ -1,6 +1,7 @@
 import { BrowserWindow, ipcMain, screen } from 'electron'
+import type Store from 'electron-store'
 
-export default (win: BrowserWindow | null) => {
+export function dragWindow(win: BrowserWindow | null, userData: Store) {
   const XY = {
     x: 0,
     y: 0
@@ -28,5 +29,19 @@ export default (win: BrowserWindow | null) => {
   function refreshWinPosition() {
     const cursorPosition = screen.getCursorScreenPoint() //移动后鼠标位置
     win?.setPosition(cursorPosition.x - XY.x, cursorPosition.y - XY.y, true) //设置窗口位置
+    userData.set('winPosition', [cursorPosition.x - XY.x, cursorPosition.y - XY.y])
   }
+}
+
+export function resizeEvent(win: BrowserWindow | null, userData: Store) {
+  if (!win) return
+  const { width, height } = win.getBounds()
+  userData.set('winSize', [width, height])
+
+  win?.on('resize', () => {
+    if (!win) return
+    const { width, height, x, y } = win.getBounds()
+    userData.set('winSize', [width, height])
+    userData.set('winPosition', [x, y])
+  })
 }

@@ -4,11 +4,6 @@ import type { BrowserWindow, MenuItemConstructorOptions } from 'electron'
 
 let tray: Tray
 
-function setAlwaysOnTop(win: BrowserWindow) {
-  const newStatus = !win.isAlwaysOnTop()
-  win.setAlwaysOnTop(newStatus)
-}
-
 function openSettings(win: BrowserWindow) {
   win.webContents.send('change-page', 'settings')
   win.show()

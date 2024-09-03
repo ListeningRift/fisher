@@ -1,22 +1,30 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Form as AForm, FormItem as AFormItem, Button as AButton, Switch as ASwitch } from 'ant-design-vue'
+import { Form as AForm, FormItem as AFormItem, Button as AButton, Switch as ASwitch, Radio as ARadio, RadioGroup as ARadioGroup } from 'ant-design-vue'
 import shortcutsInput from '../components/shortcutsInput.vue'
 
 const formData = ref({
   common: {
     alwaysOnTop: window.ipcRenderer.getStoreValue('common.alwaysOnTop', true),
-    openAtLogin: window.ipcRenderer.getStoreValue('common.openAtLogin', false)
+    openAtLogin: window.ipcRenderer.getStoreValue('common.openAtLogin', false),
+    mode: window.ipcRenderer.getStoreValue('common.mode', 'resident') as Mode
   },
   shortcuts: {
     bossKey: window.ipcRenderer.getStoreValue('shortcuts.bossKey', 'Alt+CommandOrControl+Z') as string
+  },
+  triggerMode: {
+    triggerPosition: window.ipcRenderer.getStoreValue('triggerMode.triggerPosition', 'left-top') as TriggerPosition
   }
 })
 
 function save() {
-  window.ipcRenderer.setStoreValue('shortcuts.bossKey', formData.value.shortcuts.bossKey)
   window.ipcRenderer.setStoreValue('common.alwaysOnTop', formData.value.common.alwaysOnTop)
   window.ipcRenderer.setStoreValue('common.openAtLogin', formData.value.common.openAtLogin)
+  window.ipcRenderer.setStoreValue('common.mode', formData.value.common.mode)
+
+  window.ipcRenderer.setStoreValue('shortcuts.bossKey', formData.value.shortcuts.bossKey)
+
+  window.ipcRenderer.setStoreValue('triggerMode.triggerPosition', formData.value.triggerMode.triggerPosition)
 
   window.ipcRenderer.send('update-settings')
   window.ipcRenderer.send('change-page', 'browser')
@@ -47,6 +55,15 @@ function cancel() {
         >
           <a-switch v-model:checked="formData.common.openAtLogin"></a-switch>
         </a-form-item>
+        <a-form-item
+          name="common.mode"
+          label="模式"
+        >
+          <a-radio-group v-model:value="formData.common.mode">
+            <a-radio value="resident">常驻模式</a-radio>
+            <a-radio value="trigger">触发模式</a-radio>
+          </a-radio-group>
+        </a-form-item>
       </div>
       <div class="settings-group">
         <div class="settings-group-title">快捷键</div>
@@ -54,8 +71,21 @@ function cancel() {
           name="shortcuts.bossKey"
           label="Boss Key"
         >
-          <!-- <a-input v-model:value="formData.shortcuts.bossKey"></a-input> -->
           <shortcuts-input v-model:value="formData.shortcuts.bossKey"></shortcuts-input>
+        </a-form-item>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-title">触发模式</div>
+        <a-form-item
+          name="triggerMode.triggerPosition"
+          label="触发图标位置"
+        >
+          <a-radio-group v-model:value="formData.triggerMode.triggerPosition">
+            <a-radio value="left-top">左上角</a-radio>
+            <a-radio value="left-bottom">左下角</a-radio>
+            <a-radio value="right-top">右上角</a-radio>
+            <a-radio value="right-bottom">右下角</a-radio>
+          </a-radio-group>
         </a-form-item>
       </div>
     </a-form>

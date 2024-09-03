@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fisher</title>
+    <style>
+      html {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+      }
+      body {
+        display: inline-block;
+        margin: 0;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        background: transparent;
+      }
+      .trigger {
+        display: inline-block;
+        opacity: 0.6;
+      }
+      .trigger-icon {
+        display: block;
+        width: 24px;
+        height: 24px;
+        background: url(./logo.png) no-repeat center / 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="trigger">
+      <i class="trigger-icon"></i>
+    </div>
+    <script>
+      document.querySelector('.trigger-icon').addEventListener('mouseenter', () => {
+        window.ipcRenderer.send('trigger-mode-enter')
+      })
+    </script>
+  </body>
+</html>
