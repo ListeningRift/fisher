@@ -32,7 +32,7 @@ const reload = () => {
 </script>
 
 <template>
-  <div class="browser">
+  <div class="browser-page">
     <div
       class="url-bar-trigger"
       @mouseenter="handleMouseEnter"
@@ -80,7 +80,7 @@ const reload = () => {
 </template>
 
 <style scoped>
-.browser {
+.browser-page {
   width: 100%;
   height: 100%;
   position: relative;

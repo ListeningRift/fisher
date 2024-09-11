@@ -27,6 +27,23 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     ipcRenderer.send('setStoreValue', key, value)
   },
 
+  getUserData(key: string, defaultValue?: any) {
+    const resp = ipcRenderer.sendSync('getUserData', key, defaultValue)
+    return resp
+  },
+  setUserData: (key: string, value: any) => {
+    ipcRenderer.send('setUserData', key, value)
+  },
+
+  getBookList() {
+    const resp = ipcRenderer.sendSync('getBookList')
+    return resp
+  },
+  getBookContent(book: string) {
+    const resp = ipcRenderer.sendSync('getBookContent', book)
+    return resp
+  },
+
   log(...args: Parameters<typeof console.log>) {
     ipcRenderer.send('log', ...args)
   }

@@ -1,6 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Form as AForm, FormItem as AFormItem, Button as AButton, Switch as ASwitch, Radio as ARadio, RadioGroup as ARadioGroup } from 'ant-design-vue'
+import {
+  Form as AForm,
+  FormItem as AFormItem,
+  Button as AButton,
+  Switch as ASwitch,
+  Radio as ARadio,
+  RadioGroup as ARadioGroup,
+  InputNumber as AInputNumber,
+  Input as AInput
+} from 'ant-design-vue'
 import shortcutsInput from '../components/shortcutsInput.vue'
 
 const formData = ref({
@@ -14,6 +23,14 @@ const formData = ref({
   },
   triggerMode: {
     triggerPosition: window.ipcRenderer.getStoreValue('triggerMode.triggerPosition', 'left-top') as TriggerPosition
+  },
+  book: {
+    fontSize: window.ipcRenderer.getStoreValue('book.fontSize', 14),
+    color: window.ipcRenderer.getStoreValue('book.color', '#ffffff'),
+    backgroundColor: window.ipcRenderer.getStoreValue('book.backgroundColor', 'rgba(0, 0, 0, 0)'),
+    chapterTitleRegExp: window.ipcRenderer.getStoreValue('book.chapterTitleRegExp', '(?<=\\n)第[一二三四五六七八九十百千万1234567890]+章\\s*.+'),
+    pageUpKey: window.ipcRenderer.getStoreValue('book.pageUpKey', 'W'),
+    pageDownKey: window.ipcRenderer.getStoreValue('book.pageDownKey', 'S')
   }
 })
 
@@ -26,17 +43,24 @@ function save() {
 
   window.ipcRenderer.setStoreValue('triggerMode.triggerPosition', formData.value.triggerMode.triggerPosition)
 
+  window.ipcRenderer.setStoreValue('book.fontSize', formData.value.book.fontSize)
+  window.ipcRenderer.setStoreValue('book.color', formData.value.book.color)
+  window.ipcRenderer.setStoreValue('book.backgroundColor', formData.value.book.backgroundColor)
+  window.ipcRenderer.setStoreValue('book.chapterTitleRegExp', formData.value.book.chapterTitleRegExp)
+  window.ipcRenderer.setStoreValue('book.pageUpKey', formData.value.book.pageUpKey)
+  window.ipcRenderer.setStoreValue('book.pageDownKey', formData.value.book.pageDownKey)
+
   window.ipcRenderer.send('update-settings')
-  window.ipcRenderer.send('change-page', 'browser')
+  window.ipcRenderer.send('change-page', window.ipcRenderer.getUserData('lastPage', 'browser'))
 }
 
 function cancel() {
-  window.ipcRenderer.send('change-page', 'browser')
+  window.ipcRenderer.send('change-page', window.ipcRenderer.getUserData('lastPage', 'browser'))
 }
 </script>
 
 <template>
-  <div class="settings">
+  <div class="settings-page">
     <a-form
       :model="formData"
       :label-col="{ span: 4 }"
@@ -88,6 +112,48 @@ function cancel() {
           </a-radio-group>
         </a-form-item>
       </div>
+      <div class="settings-group">
+        <div class="settings-group-title">小说阅读</div>
+        <a-form-item
+          name="book.fontSize"
+          label="字号"
+        >
+          <a-input-number
+            v-model:value="formData.book.fontSize"
+            :min="10"
+          ></a-input-number>
+        </a-form-item>
+        <a-form-item
+          name="book.color"
+          label="字体颜色"
+        >
+          <a-input v-model:value="formData.book.color"></a-input>
+        </a-form-item>
+        <a-form-item
+          name="book.backgroundColor"
+          label="背景颜色"
+        >
+          <a-input v-model:value="formData.book.backgroundColor"></a-input>
+        </a-form-item>
+        <a-form-item
+          name="book.chapterTitleRegExp"
+          label="标题提取正则"
+        >
+          <a-input v-model:value="formData.book.chapterTitleRegExp"></a-input>
+        </a-form-item>
+        <a-form-item
+          name="book.pageUpKey"
+          label="向上翻页快捷键"
+        >
+          <shortcuts-input v-model:value="formData.book.pageUpKey"></shortcuts-input>
+        </a-form-item>
+        <a-form-item
+          name="book.pageDownKey"
+          label="向下翻页快捷键"
+        >
+          <shortcuts-input v-model:value="formData.book.pageDownKey"></shortcuts-input>
+        </a-form-item>
+      </div>
     </a-form>
     <div class="button-container">
       <a-button
@@ -106,18 +172,19 @@ function cancel() {
 </template>
 
 <style scoped>
-.settings {
+.settings-page {
   padding: 64px;
   width: calc(100% - 128px);
   min-width: 600px;
-  height: 100%;
+  height: calc(100% - 50px);
   background: #fff;
+  overflow: auto;
 }
 
 :deep(.ant-form-item-label) {
   display: block !important;
-  flex: 0 0 16.666666666666664% !important;
-  max-width: 16.666666666666664% !important;
+  flex: 0 0 24% !important;
+  max-width: 24% !important;
   margin-right: 8px !important;
   text-align: end !important;
 }

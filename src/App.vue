@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { pageMap } from './contants'
+import settings from './pages/settings.vue'
 import type { Pages } from './contants'
 
-const currentPage = ref<Pages>('browser')
+const currentPage = ref<Pages>(window.ipcRenderer.getUserData('lastPage', 'browser'))
 
 const showMainWindow = ref(false)
 
@@ -23,6 +24,7 @@ const onMouseLeaveWindow = () => {
 <template>
   <div
     class="main-window"
+    :style="{ background: currentPage === 'browser' ? '#333333' : 'transparent' }"
     @mouseleave="onMouseLeaveWindow"
   >
     <div
@@ -32,11 +34,10 @@ const onMouseLeaveWindow = () => {
       <div class="move-bar-line"></div>
     </div>
     <component
-      :is="pageMap[page as keyof typeof pageMap]"
-      v-for="page in Object.keys(pageMap)"
-      v-show="page === currentPage"
-      :key="page"
+      :is="pageMap[currentPage as keyof typeof pageMap]"
+      v-show="currentPage !== 'settings'"
     ></component>
+    <settings v-show="currentPage === 'settings'"></settings>
   </div>
 </template>
 
@@ -47,7 +48,6 @@ const onMouseLeaveWindow = () => {
   flex-direction: column;
   width: 100%;
   height: 100%;
-  background: #333333;
 }
 
 .move-bar {

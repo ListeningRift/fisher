@@ -12,12 +12,18 @@ const emits = defineEmits<{
 
 const fnKey = computed({
   get() {
+    if (!props.value.includes('+')) return ''
     const arr = props.value.split('+')
     return arr.slice(0, arr.length - 1).join('+')
   },
   set(key: string) {
-    const arr = props.value.split('+')
-    emits('update:value', `${key}+${arr.slice(arr.length - 1)[0]}`)
+    if (key === '') {
+      const arr = props.value.split('+')
+      emits('update:value', `${arr.slice(arr.length - 1)[0]}`)
+    } else {
+      const arr = props.value.split('+')
+      emits('update:value', `${key}+${arr.slice(arr.length - 1)[0]}`)
+    }
   }
 })
 
@@ -33,6 +39,10 @@ const fnKeyList = [
   {
     label: 'Alt+CommandOrControl',
     value: 'Alt+CommandOrControl'
+  },
+  {
+    label: '空',
+    value: ''
   }
 ]
 
@@ -42,8 +52,12 @@ const otherKey = computed({
     return arr.slice(arr.length - 1)[0]
   },
   set(key: string) {
-    const arr = props.value.split('+')
-    emits('update:value', `${arr.slice(0, arr.length - 1).join('+')}+${key}`)
+    if (fnKey.value === '') {
+      emits('update:value', `${key}`)
+    } else {
+      const arr = props.value.split('+')
+      emits('update:value', `${arr.slice(0, arr.length - 1).join('+')}+${key}`)
+    }
   }
 })
 

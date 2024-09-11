@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url'
-import path from 'node:path'
+import { dirname, join } from 'node:path'
 import { app, BrowserWindow, Menu } from 'electron'
 import Store from 'electron-store'
 import { dragWindow, resizeEvent } from './window'
@@ -13,18 +13,20 @@ import {
   onTriggerModeTrigger,
   logEvent,
   handleMode,
-  handleTriggerPosition
+  handleTriggerPosition,
+  userDataEvent,
+  bookEvent
 } from './events'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
-process.env.APP_ROOT = path.join(__dirname, '..')
+process.env.APP_ROOT = join(__dirname, '..')
 
 export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
-export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron')
-export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
+export const MAIN_DIST = join(process.env.APP_ROOT, 'dist-electron')
+export const RENDERER_DIST = join(process.env.APP_ROOT, 'dist')
 
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 'public') : RENDERER_DIST
+process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? join(process.env.APP_ROOT, 'public') : RENDERER_DIST
 
 const store = new Store()
 const userData = new Store({
@@ -37,12 +39,12 @@ let iconWin: BrowserWindow | null
 function createWindow() {
   Menu.setApplicationMenu(null)
   win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
+    icon: join(process.env.VITE_PUBLIC, 'logo.png'),
     frame: false,
     skipTaskbar: true,
     transparent: true,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.mjs'),
+      preload: join(__dirname, 'preload.mjs'),
       webviewTag: true
     },
     alwaysOnTop: store.get('common.alwaysOnTop', true) as boolean,
@@ -56,12 +58,12 @@ function createWindow() {
   const size = userData.get('winSize', undefined) as number[]
   const iconPosition = handleTriggerPosition(store.get('triggerMode.triggerPosition', 'left-top') as TriggerPosition, position, size)
   iconWin = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
+    icon: join(process.env.VITE_PUBLIC, 'logo.png'),
     frame: false,
     skipTaskbar: true,
     transparent: true,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.mjs'),
+      preload: join(__dirname, 'preload.mjs'),
       webviewTag: true
     },
     alwaysOnTop: true,
@@ -71,17 +73,19 @@ function createWindow() {
     height: 50,
     resizable: false
   })
-  iconWin.loadFile(path.join(process.env.VITE_PUBLIC, 'icon.html'))
+  iconWin.loadFile(join(process.env.VITE_PUBLIC, 'icon.html'))
 
   handleMode(store.get('common.mode', 'resident') as Mode, win, iconWin)
 
   resizeEvent(win, userData)
   dragWindow(win, userData)
   storeEvent(store)
-  changePageEvent(win)
+  changePageEvent(win, userData)
   updateSettingsEvent(win, iconWin, store)
   openUrlInCurrentWindow()
   onTriggerModeTrigger(win, iconWin, store, userData)
+  userDataEvent(userData)
+  bookEvent(win, userData)
 
   logEvent()
 
@@ -89,7 +93,7 @@ function createWindow() {
     win.loadURL(VITE_DEV_SERVER_URL)
     // win.webContents.openDevTools()
   } else {
-    win.loadFile(path.join(RENDERER_DIST, 'index.html'))
+    win.loadFile(join(RENDERER_DIST, 'index.html'))
   }
 }
 
@@ -114,5 +118,5 @@ app.on('activate', () => {
 app.whenReady().then(() => {
   createWindow()
   registerGlobalShortCuts(win, iconWin, store)
-  createTray(win)
+  createTray(win, userData)
 })

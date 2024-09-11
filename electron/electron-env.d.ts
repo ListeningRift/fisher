@@ -26,6 +26,10 @@ interface Window {
   ipcRenderer: import('electron').IpcRenderer & {
     getStoreValue: (key: string, defaultValue?: any) => any
     setStoreValue: (key: string, value: any) => void
+    getUserData: (key: string, defaultValue?: any) => any
+    setUserData: (key: string, value: any) => void
+    getBookList: () => Book[]
+    getBookContent: (book: string) => string
 
     log: (...args: Parameters<typeof console.log>) => void
   }

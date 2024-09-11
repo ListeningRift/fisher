@@ -1,4 +1,8 @@
-import { app, ipcMain } from 'electron'
+import { parse, extname } from 'node:path'
+import { readFileSync, existsSync } from 'node:fs'
+import { app, dialog, ipcMain } from 'electron'
+import { detect } from 'jschardet'
+import { decode } from 'iconv-lite'
 import { registerGlobalShortCuts } from './shortcuts'
 import type { BrowserWindow } from 'electron'
 import type Store from 'electron-store'
@@ -34,6 +38,8 @@ export function updateSettingsEvent(win: BrowserWindow, iconWin: BrowserWindow, 
     const mode = store.get('common.mode', 'resident') as Mode
     handleMode(mode, win, iconWin)
     win.webContents.send('change-mode', mode)
+
+    win.webContents.send('update-settings')
   })
 }
 
@@ -47,10 +53,21 @@ export function storeEvent(store: Store) {
   })
 }
 
+// 用户数据存储
+export function userDataEvent(store: Store) {
+  ipcMain.on('getUserData', (event, key, defaultValue) => {
+    event.returnValue = store.get(key, defaultValue)
+  })
+  ipcMain.on('setUserData', (_, key, value) => {
+    store.set(key, value)
+  })
+}
+
 // 页面维护
-export function changePageEvent(win: BrowserWindow) {
+export function changePageEvent(win: BrowserWindow, userData: Store) {
   ipcMain.on('change-page', (_, page) => {
     win?.webContents.send('change-page', page)
+    if (page !== 'settings') userData.set('lastPage', page)
   })
 }
 
@@ -96,5 +113,52 @@ export function onTriggerModeTrigger(win: BrowserWindow, iconWin: BrowserWindow,
   ipcMain.on('trigger-mode-enter', () => {
     iconWin.hide()
     win.show()
+  })
+}
+
+export function bookEvent(win: BrowserWindow, userData: Store) {
+  ipcMain.on('getBookList', event => {
+    event.returnValue = userData.get('bookList', [])
+  })
+  ipcMain.on('setBookList', (_, value) => {
+    userData.set('bookList', value)
+    win?.webContents.send('refreshBookList')
+  })
+  ipcMain.on('getBookContent', (event, book) => {
+    if (!existsSync(book)) return ''
+    const file = readFileSync(book)
+    const encoding = detect(file).encoding
+    event.returnValue = decode(file, encoding || 'utf-8')
+  })
+  ipcMain.on('addBook', () => {
+    dialog
+      .showOpenDialog(null as unknown as BrowserWindow, {
+        filters: [
+          {
+            name: 'txt',
+            extensions: ['txt']
+          },
+          {
+            name: 'All Files',
+            extensions: ['*']
+          }
+        ]
+      })
+      .then(res => {
+        if (res.canceled) return
+        const originalBookList = userData.get('bookList', []) as Book[]
+        const bookList: Book[] = res.filePaths
+          .filter(item => {
+            return extname(item) === '.txt'
+          })
+          .map(item => ({
+            name: parse(item).name,
+            path: item,
+            lastParagraph: 0,
+            lastChapter: -1
+          }))
+        userData.set('bookList', originalBookList.concat(bookList))
+        win?.webContents.send('refreshBookList')
+      })
   })
 }
