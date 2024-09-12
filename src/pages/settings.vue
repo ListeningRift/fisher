@@ -28,7 +28,6 @@ const formData = ref({
     fontSize: window.ipcRenderer.getStoreValue('book.fontSize', 14),
     color: window.ipcRenderer.getStoreValue('book.color', '#ffffff'),
     backgroundColor: window.ipcRenderer.getStoreValue('book.backgroundColor', 'rgba(0, 0, 0, 0)'),
-    chapterTitleRegExp: window.ipcRenderer.getStoreValue('book.chapterTitleRegExp', '(?<=\\n)第[一二三四五六七八九十百千万1234567890]+章\\s*.+'),
     pageUpKey: window.ipcRenderer.getStoreValue('book.pageUpKey', 'W'),
     pageDownKey: window.ipcRenderer.getStoreValue('book.pageDownKey', 'S')
   }
@@ -46,7 +45,6 @@ function save() {
   window.ipcRenderer.setStoreValue('book.fontSize', formData.value.book.fontSize)
   window.ipcRenderer.setStoreValue('book.color', formData.value.book.color)
   window.ipcRenderer.setStoreValue('book.backgroundColor', formData.value.book.backgroundColor)
-  window.ipcRenderer.setStoreValue('book.chapterTitleRegExp', formData.value.book.chapterTitleRegExp)
   window.ipcRenderer.setStoreValue('book.pageUpKey', formData.value.book.pageUpKey)
   window.ipcRenderer.setStoreValue('book.pageDownKey', formData.value.book.pageDownKey)
 
@@ -134,12 +132,6 @@ function cancel() {
           label="背景颜色"
         >
           <a-input v-model:value="formData.book.backgroundColor"></a-input>
-        </a-form-item>
-        <a-form-item
-          name="book.chapterTitleRegExp"
-          label="标题提取正则"
-        >
-          <a-input v-model:value="formData.book.chapterTitleRegExp"></a-input>
         </a-form-item>
         <a-form-item
           name="book.pageUpKey"

@@ -30,6 +30,15 @@ const gotoByChapter = (book: Book) => {
   })
 }
 
+const bookSettings = (book: Book) => {
+  open(
+    defineAsyncComponent(() => import('../components/bookSettingsDialog.vue')),
+    {
+      book
+    }
+  )
+}
+
 // const [modal, contextHolder] = Modal.useModal()
 const deleteBook = (book: Book) => {
   Modal.confirm({
@@ -69,6 +78,12 @@ const deleteBook = (book: Book) => {
             @click="gotoByChapter(book)"
           >
             章节跳转
+          </a-menu-item>
+          <a-menu-item
+            key="bookSettings"
+            @click="bookSettings(book)"
+          >
+            书籍设置
           </a-menu-item>
           <a-menu-item
             key="delete"

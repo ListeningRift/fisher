@@ -15,19 +15,15 @@ function getConfig() {
 
 const lastBook = window.ipcRenderer.getUserData('lastBook', '')
 const book = window.ipcRenderer.getBookContent(lastBook)
-
-const chapterTitleRegExp = new RegExp(
-  window.ipcRenderer.getStoreValue('book.chapterTitleRegExp', '(?<=\\n)第[一二三四五六七八九十百千万1234567890]+章\\s*.+'),
-  'g'
-)
-
-const chapterTitles = Array.from(book.matchAll(chapterTitleRegExp))
-
 const bookList = window.ipcRenderer.getBookList()
 const bookDetail = bookList.find(b => b.path === lastBook)
 if (!bookDetail) {
   window.ipcRenderer.send('change-page', 'bookShelf')
 }
+
+const chapterTitleRegExp = new RegExp(bookDetail?.chapterTitleRegExp || '(?<=\\n)第[一二三四五六七八九十百千万1234567890]+章\\s*.+', 'g')
+
+const chapterTitles = Array.from(book.matchAll(chapterTitleRegExp))
 
 const currentChapter = ref(bookDetail?.lastChapter || -1) // 当前章节序号
 function setUserDataChapter(value: number) {
@@ -120,10 +116,12 @@ function handlePageIndex() {
 
 const pageChange = (direction: 'up' | 'down') => {
   if (direction === 'down') {
+    window.ipcRenderer.log('log', currentPage.value)
+    window.ipcRenderer.log('log', chapter.value.length)
     if (currentPage.value < pageMark.value.length - 2) {
       currentPage.value++
       setUserDataPageIndex(currentPage.value)
-    } else if (currentChapter.value < chapter.value.length - 1) {
+    } else if (currentChapter.value < chapterTitles.length - 1) {
       currentChapter.value++
       setUserDataChapter(currentChapter.value)
       currentPage.value = 0
