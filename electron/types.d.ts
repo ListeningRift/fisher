@@ -7,4 +7,5 @@ interface Book {
   path: string
   lastChapter: number
   lastParagraph: number
+  chapterTitleRegExp: string
 }

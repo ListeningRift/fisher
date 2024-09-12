@@ -44,7 +44,7 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     return resp
   },
 
-  log(...args: Parameters<typeof console.log>) {
-    ipcRenderer.send('log', ...args)
+  log(type: 'log' | 'error' | 'warn', ...args: Parameters<typeof console.log>) {
+    ipcRenderer.send(type, ...args)
   }
 })

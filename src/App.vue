@@ -19,6 +19,24 @@ const onMouseLeaveWindow = () => {
   window.ipcRenderer.send('trigger-mode-leave')
   showMainWindow.value = false
 }
+
+window.addEventListener(
+  'error',
+  function (event) {
+    // console.log('error', `${event.error.stack}`)
+    window.ipcRenderer.log('error', {
+      msg: event.message,
+      url: event.filename,
+      error: {
+        message: event.error.message,
+        stack: event.error.stack
+      },
+      // source: 'window.addEventListener error',
+      time: new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }).toString()
+    })
+  },
+  true
+)
 </script>
 
 <template>

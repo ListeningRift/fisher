@@ -3,15 +3,31 @@ import { readFileSync, existsSync } from 'node:fs'
 import { app, dialog, ipcMain } from 'electron'
 import { detect } from 'jschardet'
 import { decode } from 'iconv-lite'
+import * as log4js from 'log4js'
 import { registerGlobalShortCuts } from './shortcuts'
 import type { BrowserWindow } from 'electron'
 import type Store from 'electron-store'
 
 // 调试用 log
 export function logEvent() {
+  log4js.configure({
+    appenders: { trace: { type: 'file', filename: 'trace.log', maxLogSize: 1000 } },
+    categories: { default: { appenders: ['trace'], level: 'trace' } }
+  })
+  const logger = log4js.getLogger()
+  logger.level = 'error'
   ipcMain.on('log', (_, ...args) => {
     // eslint-disable-next-line no-console
     console.log(...args)
+  })
+  ipcMain.on('error', (_, ...args) => {
+    // eslint-disable-next-line no-console
+    console.error(...args)
+    logger.error(args[0].error)
+  })
+  ipcMain.on('warn', (_, ...args) => {
+    // eslint-disable-next-line no-console
+    console.warn(...args)
   })
 }
 
@@ -85,6 +101,7 @@ export function openUrlInCurrentWindow() {
 
 // 计算触发模式下触发图标在四个角时 分别根据窗口位置算出的图标位置
 export function handleTriggerPosition(position: TriggerPosition, coordinates: number[], size: number[]) {
+  if (!coordinates || !size) return [undefined, undefined]
   if (position === 'left-top') {
     return [coordinates[0], coordinates[1]]
   } else if (position === 'left-bottom') {
@@ -105,6 +122,7 @@ export function onTriggerModeTrigger(win: BrowserWindow, iconWin: BrowserWindow,
     const size = userData.get('winSize', undefined) as number[] | undefined
     if (position && size) {
       const newPosition = handleTriggerPosition(store.get('triggerMode.triggerPosition', 'left-top') as TriggerPosition, position, size)
+      if (newPosition[0] === undefined || newPosition[1] === undefined) return
       iconWin.setPosition(newPosition[0], newPosition[1])
     }
     iconWin.show()
@@ -155,7 +173,8 @@ export function bookEvent(win: BrowserWindow, userData: Store) {
             name: parse(item).name,
             path: item,
             lastParagraph: 0,
-            lastChapter: -1
+            lastChapter: -1,
+            chapterTitleRegExp: '(?<=\\n)第[一二三四五六七八九十百千万1234567890]+章\\s*.+'
           }))
         userData.set('bookList', originalBookList.concat(bookList))
         win?.webContents.send('refreshBookList')
