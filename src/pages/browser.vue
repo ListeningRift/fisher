@@ -84,6 +84,8 @@ const reload = () => {
   width: 100%;
   height: 100%;
   position: relative;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
 .url-bar-trigger {

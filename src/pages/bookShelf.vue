@@ -111,6 +111,8 @@ const deleteBook = (book: Book) => {
   width: calc(100% - 32px);
   height: calc(100% - 32px);
   background-color: #f4e9e7;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
   overflow-y: auto;
 }
 

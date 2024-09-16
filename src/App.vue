@@ -76,6 +76,8 @@ window.addEventListener(
   width: 100%;
   height: 16px;
   background: #333333;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
   cursor: move;
   /* -webkit-app-region: drag; */
 

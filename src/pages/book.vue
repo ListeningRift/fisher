@@ -114,34 +114,40 @@ function handlePageIndex() {
   }
 }
 
+function nextChapter() {
+  currentChapter.value++
+  setUserDataChapter(currentChapter.value)
+  currentPage.value = 0
+  setUserDataPageIndex(currentPage.value)
+  nextTick(() => {
+    calculateParagraphNumber()
+  })
+}
+
+function prevChapter(target: 'start' | 'end') {
+  currentChapter.value = currentChapter.value - 1
+  setUserDataChapter(currentChapter.value)
+  nextTick(() => {
+    calculateParagraphNumber()
+    currentPage.value = target === 'start' ? 0 : pageMark.value.length - 2
+    setUserDataPageIndex(currentPage.value)
+  })
+}
+
 const pageChange = (direction: 'up' | 'down') => {
   if (direction === 'down') {
-    window.ipcRenderer.log('log', currentPage.value)
-    window.ipcRenderer.log('log', chapter.value.length)
     if (currentPage.value < pageMark.value.length - 2) {
       currentPage.value++
       setUserDataPageIndex(currentPage.value)
     } else if (currentChapter.value < chapterTitles.length - 1) {
-      currentChapter.value++
-      setUserDataChapter(currentChapter.value)
-      currentPage.value = 0
-      setUserDataPageIndex(currentPage.value)
-      nextTick(() => {
-        calculateParagraphNumber()
-      })
+      nextChapter()
     }
   } else {
     if (currentPage.value > 0) {
       currentPage.value--
       setUserDataPageIndex(currentPage.value)
     } else if (currentChapter.value > -1) {
-      currentChapter.value = currentChapter.value - 1
-      setUserDataChapter(currentChapter.value)
-      nextTick(() => {
-        calculateParagraphNumber()
-        currentPage.value = pageMark.value.length - 2
-        setUserDataPageIndex(currentPage.value)
-      })
+      prevChapter('end')
     }
   }
 }
@@ -184,32 +190,89 @@ window.ipcRenderer.on('update-settings', () => {
   ;({ fontSize, color, backgroundColor, pageDownKey, pageUpKey } = getConfig())
   handlePage()
 })
+
+const percent = computed(() => {
+  const chapterPercent = currentChapter.value / (chapterTitles.length - 1)
+  const pagePercent = currentPage.value / ((chapterTitles.length - 1) * pageMark.value.length - 2)
+  return ((chapterPercent + pagePercent) * 100).toFixed(2)
+})
 </script>
 
 <template>
   <div
-    ref="bookPageRef"
     class="book-page"
     :style="{
       fontSize,
       color,
       backgroundColor
     }"
-    @wheel="onWheel"
   >
-    <p
-      v-for="(p, index) in showChapter"
-      :key="p + index"
-      v-html="p"
-    ></p>
+    <div
+      ref="bookPageRef"
+      class="book-content"
+      @wheel="onWheel"
+    >
+      <p
+        v-for="(p, index) in showChapter"
+        :key="p + index"
+        v-html="p"
+      ></p>
+    </div>
+    <div class="book-info-bar">
+      <div
+        class="book-info-bar-item book-info-bar-button"
+        @click="prevChapter('start')"
+      >
+        上一章
+      </div>
+      <div
+        class="book-info-bar-item book-info-bar-button"
+        @click="nextChapter"
+      >
+        下一章
+      </div>
+      <div class="book-info-bar-item">{{ percent }}%</div>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .book-page {
-  padding: 0 8px;
-  width: calc(100% - 16px);
+  display: flex;
+  flex-direction: column;
   height: 100%;
   overflow: hidden;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.book-content {
+  flex-grow: 1;
+  padding: 0 8px;
+  width: calc(100% - 16px);
+  height: 0;
+}
+
+.book-info-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 8px;
+  width: calc(100% - 16px);
+  height: 24px;
+  font-size: 12px;
+
+  .book-info-bar-item {
+    margin-left: 12px;
+    padding-left: 12px;
+
+    &:not(:first-child) {
+      border-left: 1px solid #666666;
+    }
+
+    &.book-info-bar-button {
+      cursor: pointer;
+    }
+  }
 }
 </style>
