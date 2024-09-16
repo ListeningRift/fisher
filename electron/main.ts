@@ -75,13 +75,13 @@ function createWindow() {
   })
   iconWin.loadFile(join(process.env.VITE_PUBLIC, 'icon.html'))
 
-  handleMode(store.get('common.mode', 'resident') as Mode, win, iconWin)
+  handleMode(store.get('common.mode', 'resident') as Mode, win, iconWin, userData, store)
 
   resizeEvent(win, userData)
   dragWindow(win, userData)
   storeEvent(store)
   changePageEvent(win, userData)
-  updateSettingsEvent(win, iconWin, store)
+  updateSettingsEvent(win, iconWin, userData, store)
   openUrlInCurrentWindow()
   onTriggerModeTrigger(win, iconWin, store, userData)
   userDataEvent(userData)

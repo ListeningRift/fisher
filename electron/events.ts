@@ -31,18 +31,25 @@ export function logEvent() {
   })
 }
 
-export function handleMode(mode: Mode, win: BrowserWindow, iconWin: BrowserWindow) {
+export function handleMode(mode: Mode, win: BrowserWindow, iconWin: BrowserWindow, userData: Store, store: Store) {
   if (mode === 'resident') {
     iconWin.hide()
     win.show()
   } else if (mode === 'trigger') {
+    const position = userData.get('winPosition', undefined) as number[] | undefined
+    const size = userData.get('winSize', undefined) as number[] | undefined
+    if (position && size) {
+      const newPosition = handleTriggerPosition(store.get('triggerMode.triggerPosition', 'left-top') as TriggerPosition, position, size)
+      if (newPosition[0] === undefined || newPosition[1] === undefined) return
+      iconWin.setPosition(newPosition[0], newPosition[1])
+    }
     win.hide()
     iconWin.show()
   }
 }
 
 // 更新配置项
-export function updateSettingsEvent(win: BrowserWindow, iconWin: BrowserWindow, store: Store) {
+export function updateSettingsEvent(win: BrowserWindow, iconWin: BrowserWindow, userData: Store, store: Store) {
   ipcMain.on('update-settings', () => {
     registerGlobalShortCuts(win, iconWin, store)
     win.setAlwaysOnTop(store.get('common.alwaysOnTop', true) as boolean)
@@ -52,7 +59,7 @@ export function updateSettingsEvent(win: BrowserWindow, iconWin: BrowserWindow, 
       args: ['--openAsHidden']
     })
     const mode = store.get('common.mode', 'resident') as Mode
-    handleMode(mode, win, iconWin)
+    handleMode(mode, win, iconWin, userData, store)
     win.webContents.send('change-mode', mode)
 
     win.webContents.send('update-settings')
