@@ -1,16 +1,19 @@
 import { BrowserWindow, ipcMain, screen } from 'electron'
 import type Store from 'electron-store'
+import type { Rectangle } from 'electron'
 
 export function dragWindow(win: BrowserWindow | null, userData: Store) {
   const XY = {
     x: 0,
     y: 0
   }
+  let size: Rectangle | undefined
   let IntervalId: ReturnType<typeof setInterval>
 
   // 移动窗口----start
   ipcMain.on('window-move-start', () => {
     const winPosition = win?.getPosition()
+    size = win?.getBounds()
     if (!winPosition) return
     const cursorPosition = screen.getCursorScreenPoint() //开始时鼠标位置
     XY.x = cursorPosition.x - winPosition[0]
@@ -28,7 +31,15 @@ export function dragWindow(win: BrowserWindow | null, userData: Store) {
 
   function refreshWinPosition() {
     const cursorPosition = screen.getCursorScreenPoint() //移动后鼠标位置
-    win?.setPosition(cursorPosition.x - XY.x, cursorPosition.y - XY.y, true) //设置窗口位置
+    win?.setBounds(
+      {
+        x: cursorPosition.x - XY.x,
+        y: cursorPosition.y - XY.y,
+        width: size?.width,
+        height: size?.height
+      },
+      true
+    ) //设置窗口位置
     userData.set('winPosition', [cursorPosition.x - XY.x, cursorPosition.y - XY.y])
   }
 }
