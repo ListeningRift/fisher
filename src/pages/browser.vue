@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { Input as AInput } from 'ant-design-vue'
+import chevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue'
+import chevronRightIcon from 'vue-material-design-icons/ChevronRight.vue'
+import arrowRightIcon from 'vue-material-design-icons/ArrowRight.vue'
+import reloadIcon from 'vue-material-design-icons/Reload.vue'
 
 let webviewRef: any = null
 
@@ -46,26 +50,26 @@ const reload = () => {
         class="url-bar-button left-button"
         @click="goBack"
       >
-        <i class="arrow go-back"></i>
+        <chevron-left-icon fill-color="#666666"></chevron-left-icon>
       </div>
       <div
         class="url-bar-button left-button"
         @click="goForward"
       >
-        <i class="arrow go-forward"></i>
+        <chevron-right-icon fill-color="#666666"></chevron-right-icon>
       </div>
       <a-input v-model:value="url"></a-input>
       <div
         class="url-bar-button right-button"
         @click="handleUrlChange"
       >
-        <i class="go-to"></i>
+        <arrow-right-icon fill-color="#666666"></arrow-right-icon>
       </div>
       <div
         class="url-bar-button right-button"
         @click="reload"
       >
-        <i class="reload"></i>
+        <reload-icon fill-color="#666666"></reload-icon>
       </div>
     </div>
     <div class="webview-wrapper">
@@ -126,33 +130,6 @@ const reload = () => {
     &.right-button {
       margin-left: 8px;
     }
-  }
-
-  .arrow {
-    display: block;
-    width: 24px;
-    height: 24px;
-    background: url(../assets/arrow.svg) no-repeat center center / 100%;
-  }
-
-  .go-back {
-    transform: rotate(90deg);
-  }
-  .go-forward {
-    transform: rotate(-90deg);
-  }
-
-  .go-to {
-    display: block;
-    width: 24px;
-    height: 24px;
-    background: url(../assets/go.svg) no-repeat center center / 18px;
-  }
-  .reload {
-    display: block;
-    width: 24px;
-    height: 24px;
-    background: url(../assets/reload.svg) no-repeat center center / 18px;
   }
 
   .ant-input {

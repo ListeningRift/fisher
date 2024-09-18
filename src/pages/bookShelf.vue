@@ -2,6 +2,7 @@
 import { defineAsyncComponent, ref } from 'vue'
 import { Dropdown as ADropdown, Menu as AMenu, MenuItem as AMenuItem, Modal } from 'ant-design-vue'
 import { useDialog } from 'use-dialog-vue3'
+import plusIcon from 'vue-material-design-icons/Plus.vue'
 
 const bookList = ref(window.ipcRenderer.getBookList())
 
@@ -98,7 +99,10 @@ const deleteBook = (book: Book) => {
       class="book-item add-book"
       @click="addBook"
     >
-      <i class="icon-add"></i>
+      <plus-icon
+        :size="32"
+        fill-color="#666666"
+      ></plus-icon>
     </div>
   </div>
 </template>
@@ -160,12 +164,5 @@ const deleteBook = (book: Book) => {
   width: 100%;
   text-align: center;
   font-size: 10px;
-}
-
-.icon-add {
-  display: block;
-  width: 32px;
-  height: 32px;
-  background: url(../assets/add.svg) no-repeat center center / 24px;
 }
 </style>
