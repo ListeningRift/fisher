@@ -11,7 +11,7 @@ import type Store from 'electron-store'
 // 调试用 log
 export function logEvent() {
   log4js.configure({
-    appenders: { trace: { type: 'file', filename: 'trace.log', maxLogSize: 1000 } },
+    appenders: { trace: { type: 'file', filename: 'trace.log', maxLogSize: 100 } },
     categories: { default: { appenders: ['trace'], level: 'trace' } }
   })
   const logger = log4js.getLogger()
@@ -179,7 +179,10 @@ export function bookEvent(win: BrowserWindow, userData: Store) {
           .map(item => ({
             name: parse(item).name,
             path: item,
-            lastParagraph: 0,
+            lastPage: {
+              paragraphIndex: 0,
+              characterIndex: 0
+            },
             lastChapter: -1,
             chapterTitleRegExp: '(?<=\\n)第[一二三四五六七八九十百千万1234567890]+章\\s*.+'
           }))

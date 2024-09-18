@@ -21,7 +21,10 @@ const selectChapter = (index: number) => {
   const chapterIndex = index + (currentPage.value - 1) * 100
   if (!bookDetail) return
   bookDetail!.lastChapter = chapterIndex
-  bookDetail!.lastParagraph = 0
+  bookDetail!.lastPage = {
+    paragraphIndex: 0,
+    characterIndex: 0
+  }
   window.ipcRenderer.send('setBookList', bookList)
   close(bookDetail)
 }
