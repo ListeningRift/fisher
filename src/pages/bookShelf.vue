@@ -31,6 +31,17 @@ const gotoByChapter = (book: Book) => {
   })
 }
 
+const gotoBySearch = (book: Book) => {
+  open(
+    defineAsyncComponent(() => import('../components/bookSearchDialog.vue')),
+    {
+      book
+    }
+  ).then(newBook => {
+    selectBook(newBook)
+  })
+}
+
 const bookSettings = (book: Book) => {
   open(
     defineAsyncComponent(() => import('../components/bookSettingsDialog.vue')),
@@ -79,6 +90,12 @@ const deleteBook = (book: Book) => {
             @click="gotoByChapter(book)"
           >
             章节跳转
+          </a-menu-item>
+          <a-menu-item
+            key="gotoBySearch"
+            @click="gotoBySearch(book)"
+          >
+            搜索跳转
           </a-menu-item>
           <a-menu-item
             key="bookSettings"
