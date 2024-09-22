@@ -34,6 +34,7 @@ const selectChapter = (index: number) => {
   <a-modal
     v-model:open="visible"
     :footer="null"
+    centered
     title="章节目录"
   >
     <div class="chapter-titles">

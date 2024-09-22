@@ -126,6 +126,7 @@ const goTo = (result: (typeof results.value)[0]) => {
   <a-modal
     v-model:open="visible"
     :footer="null"
+    centered
     title="搜索跳转"
   >
     <div class="search-input">

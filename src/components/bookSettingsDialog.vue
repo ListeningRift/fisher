@@ -27,6 +27,7 @@ const onOk = () => {
   <a-modal
     v-model:open="visible"
     title="书籍设置"
+    centered
     ok-text="确定"
     cancel-text="取消"
     @ok="onOk"

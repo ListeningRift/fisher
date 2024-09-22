@@ -30,6 +30,7 @@ interface Window {
     setUserData: (key: string, value: any) => void
     getBookList: () => Book[]
     getBookContent: (book: string) => string
+    checkBook: (book: string) => boolean
 
     log: (...args: Parameters<typeof console.log>) => void
   }

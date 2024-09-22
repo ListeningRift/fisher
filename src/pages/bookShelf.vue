@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineAsyncComponent, ref } from 'vue'
-import { Dropdown as ADropdown, Menu as AMenu, MenuItem as AMenuItem, Modal } from 'ant-design-vue'
+import { Dropdown as ADropdown, Menu as AMenu, MenuItem as AMenuItem, Modal, message } from 'ant-design-vue'
 import { useDialog } from 'use-dialog-vue3'
 import plusIcon from 'vue-material-design-icons/Plus.vue'
 
@@ -51,6 +51,22 @@ const bookSettings = (book: Book) => {
   )
 }
 
+const checkBook = (book: Book) => {
+  if (window.ipcRenderer.checkBook(book.path)) {
+    message.success('书籍有效')
+  } else {
+    open(defineAsyncComponent(() => import('../components/checkBookDialog.vue'))).then(isClearAll => {
+      if (isClearAll) {
+        const newBookList = window.ipcRenderer.getBookList().filter(b => window.ipcRenderer.checkBook(b.path))
+        window.ipcRenderer.send('setBookList', newBookList)
+      } else {
+        const newBookList = window.ipcRenderer.getBookList().filter(b => b.path !== book.path)
+        window.ipcRenderer.send('setBookList', newBookList)
+      }
+    })
+  }
+}
+
 // const [modal, contextHolder] = Modal.useModal()
 const deleteBook = (book: Book) => {
   Modal.confirm({
@@ -64,17 +80,28 @@ const deleteBook = (book: Book) => {
     }
   })
 }
+
+const handleMove = (oldIndex: number, newIndex: number) => {
+  bookList.value.splice(newIndex, 0, bookList.value.splice(oldIndex, 1)[0])
+  window.ipcRenderer.send('setBookList', JSON.parse(JSON.stringify(bookList.value)))
+}
 </script>
 
 <template>
-  <div class="book-shelf-page">
+  <div
+    v-drag-sort="{
+      draggable: '.can-sort',
+      callback: handleMove
+    }"
+    class="book-shelf-page"
+  >
     <a-dropdown
       v-for="book in bookList"
       :key="book.path"
       :trigger="['contextmenu']"
     >
       <div
-        class="book-item"
+        class="book-item can-sort"
         :title="book.name"
         @click="selectBook(book)"
       >
@@ -104,7 +131,14 @@ const deleteBook = (book: Book) => {
             书籍设置
           </a-menu-item>
           <a-menu-item
+            key="checkBook"
+            @click="checkBook(book)"
+          >
+            检查书籍路径
+          </a-menu-item>
+          <a-menu-item
             key="delete"
+            class="book-menu-delete"
             @click="deleteBook(book)"
           >
             删除
@@ -181,5 +215,9 @@ const deleteBook = (book: Book) => {
   width: 100%;
   text-align: center;
   font-size: 10px;
+}
+
+:deep(.book-menu-delete) {
+  color: #eb4847 !important;
 }
 </style>

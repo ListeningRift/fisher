@@ -1,10 +1,12 @@
 // 导入指令定义文件
+import dragSort from './dragSort'
 import dragWindow from './dragWindow'
 import type { App } from 'vue'
 
 // 集成一起
 const directivesList: any = {
-  dragWindow
+  dragWindow,
+  dragSort
 }
 
 //批量注册

@@ -43,6 +43,10 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     const resp = ipcRenderer.sendSync('getBookContent', book)
     return resp
   },
+  checkBook(book: string) {
+    const resp = ipcRenderer.sendSync('checkBook', book)
+    return resp
+  },
 
   log(type: 'log' | 'error' | 'warn', ...args: Parameters<typeof console.log>) {
     ipcRenderer.send(type, ...args)

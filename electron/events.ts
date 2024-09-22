@@ -195,4 +195,7 @@ export function bookEvent(win: BrowserWindow, userData: Store) {
         win?.webContents.send('refreshBookList')
       })
   })
+  ipcMain.on('checkBook', (event, book) => {
+    event.returnValue = existsSync(book)
+  })
 }
