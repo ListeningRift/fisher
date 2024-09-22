@@ -174,7 +174,7 @@ export function bookEvent(win: BrowserWindow, userData: Store) {
         const originalBookList = userData.get('bookList', []) as Book[]
         const bookList: Book[] = res.filePaths
           .filter(item => {
-            return extname(item) === '.txt'
+            return extname(item) === '.txt' && !originalBookList.some(book => book.path === item)
           })
           .map(item => ({
             name: parse(item).name,
