@@ -11,7 +11,7 @@ import type Store from 'electron-store'
 // 调试用 log
 export function logEvent() {
   log4js.configure({
-    appenders: { trace: { type: 'file', filename: 'trace.log', maxLogSize: 100 } },
+    appenders: { trace: { type: 'file', filename: 'trace.log', maxLogSize: 500000 } },
     categories: { default: { appenders: ['trace'], level: 'trace' } }
   })
   const logger = log4js.getLogger()
