@@ -1,5 +1,7 @@
-const dropWindow = {
-  mounted(el: HTMLElement) {
+import type { Directive, DirectiveBinding } from 'vue'
+
+const dropWindow: Directive = {
+  mounted(el: HTMLElement, binding: DirectiveBinding) {
     //按下鼠标左键
     el.addEventListener('mousedown', e => {
       if (e.buttons == 1) {
@@ -14,7 +16,7 @@ const dropWindow = {
     })
 
     function winMoveStart() {
-      window.ipcRenderer.send('window-move-start')
+      window.ipcRenderer.send(`${binding.modifiers.settings ? 'settings' : 'window'}-move-start`)
     }
 
     //补丁:鼠标在窗口外松开不触发mouseup，鼠标回到窗口没按着左键停止
@@ -26,7 +28,7 @@ const dropWindow = {
     }
 
     function winMoveEnd() {
-      window.ipcRenderer.send('window-move-end')
+      window.ipcRenderer.send(`${binding.modifiers.settings ? 'settings' : 'window'}-move-end`)
     }
   }
 }

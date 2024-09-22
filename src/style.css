@@ -31,3 +31,38 @@ h1 {
   width: 100%;
   height: 100%;
 }
+
+.main-window {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.move-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 100%;
+  height: 16px;
+  background: #333333;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  cursor: move;
+  /* -webkit-app-region: drag; */
+
+  .move-bar-line {
+    width: 60%;
+    height: 4px;
+    background: #999999;
+    border-radius: 4px;
+  }
+
+  &:hover {
+    .move-bar-line {
+      background: #3a82fe;
+    }
+  }
+}

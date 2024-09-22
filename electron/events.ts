@@ -49,7 +49,7 @@ export function handleMode(mode: Mode, win: BrowserWindow, iconWin: BrowserWindo
 }
 
 // 更新配置项
-export function updateSettingsEvent(win: BrowserWindow, iconWin: BrowserWindow, userData: Store, store: Store) {
+export function updateSettingsEvent(win: BrowserWindow, iconWin: BrowserWindow, settingsWin: BrowserWindow, userData: Store, store: Store) {
   ipcMain.on('update-settings', () => {
     registerGlobalShortCuts(win, iconWin, store)
     win.setAlwaysOnTop(store.get('common.alwaysOnTop', true) as boolean)
@@ -63,6 +63,9 @@ export function updateSettingsEvent(win: BrowserWindow, iconWin: BrowserWindow, 
     win.webContents.send('change-mode', mode)
 
     win.webContents.send('update-settings')
+  })
+  ipcMain.on('close-settings', () => {
+    settingsWin.hide()
   })
 }
 
@@ -120,6 +123,7 @@ export function handleTriggerPosition(position: TriggerPosition, coordinates: nu
   }
 }
 
+// 触发模式触发事件
 export function onTriggerModeTrigger(win: BrowserWindow, iconWin: BrowserWindow, store: Store, userData: Store) {
   ipcMain.on('trigger-mode-leave', () => {
     if (store.get('common.mode', 'resident') === 'resident') {
@@ -141,6 +145,7 @@ export function onTriggerModeTrigger(win: BrowserWindow, iconWin: BrowserWindow,
   })
 }
 
+// 书籍维护
 export function bookEvent(win: BrowserWindow, userData: Store) {
   ipcMain.on('getBookList', event => {
     event.returnValue = userData.get('bookList', [])

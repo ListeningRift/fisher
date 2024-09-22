@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { app, BrowserWindow, Menu } from 'electron'
 import Store from 'electron-store'
-import { dragWindow, resizeEvent } from './window'
+import { dragWindow, dragSettingsWindow, resizeEvent } from './window'
 import createTray from './tray'
 import { registerGlobalShortCuts } from './shortcuts'
 import {
@@ -35,6 +35,7 @@ const userData = new Store({
 
 let win: BrowserWindow | null
 let iconWin: BrowserWindow | null
+let settingsWin: BrowserWindow | null
 
 function createWindow() {
   Menu.setApplicationMenu(null)
@@ -75,13 +76,28 @@ function createWindow() {
   })
   iconWin.loadFile(join(process.env.VITE_PUBLIC, 'icon.html'))
 
+  settingsWin = new BrowserWindow({
+    icon: join(process.env.VITE_PUBLIC, 'logo.png'),
+    frame: false,
+    transparent: true,
+    webPreferences: {
+      preload: join(__dirname, 'preload.mjs'),
+      webviewTag: true
+    },
+    width: 900,
+    minWidth: 800,
+    height: 600
+  })
+  settingsWin.hide()
+
   handleMode(store.get('common.mode', 'resident') as Mode, win, iconWin, userData, store)
 
   resizeEvent(win, userData)
   dragWindow(win, userData)
+  dragSettingsWindow(settingsWin)
   storeEvent(store)
   changePageEvent(win, userData)
-  updateSettingsEvent(win, iconWin, userData, store)
+  updateSettingsEvent(win, iconWin, settingsWin, userData, store)
   openUrlInCurrentWindow()
   onTriggerModeTrigger(win, iconWin, store, userData)
   userDataEvent(userData)
@@ -92,8 +108,11 @@ function createWindow() {
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
     win.webContents.openDevTools()
+    settingsWin.loadURL(VITE_DEV_SERVER_URL + '/settings')
+    settingsWin.webContents.openDevTools()
   } else {
     win.loadFile(join(RENDERER_DIST, 'index.html'))
+    settingsWin.loadFile(join(RENDERER_DIST, 'settings.html'))
   }
 }
 
@@ -118,5 +137,5 @@ app.on('activate', () => {
 app.whenReady().then(() => {
   createWindow()
   registerGlobalShortCuts(win, iconWin, store)
-  createTray(win, userData)
+  createTray(win, settingsWin, userData)
 })
