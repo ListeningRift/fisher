@@ -15,6 +15,11 @@ function openSettings(settingsWin: BrowserWindow) {
   settingsWin.show()
 }
 
+function reload(win: BrowserWindow, settingsWin: BrowserWindow) {
+  win.webContents.reload()
+  settingsWin.webContents.reload()
+}
+
 export default function createTray(win: BrowserWindow | null, settingsWin: BrowserWindow | null, userData: Store) {
   tray = new Tray(nativeImage.createFromPath(path.join(process.env.VITE_PUBLIC, 'logo.png')))
   tray.setToolTip('Fisher')
@@ -24,6 +29,7 @@ export default function createTray(win: BrowserWindow | null, settingsWin: Brows
     { label: '小说书架', click: () => openPage(win!, 'bookShelf', userData) },
     { type: 'separator' },
     { label: '设置', click: () => openSettings(settingsWin!) },
+    { label: '刷新', click: () => reload(win!, settingsWin!) },
     { type: 'separator' },
     { label: '显示', click: () => win?.show() },
     { label: '退出', role: 'quit', click: () => app.quit() }
