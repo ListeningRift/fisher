@@ -1,4 +1,4 @@
-import { parse, extname } from 'node:path'
+import { parse } from 'node:path'
 import { readFileSync, existsSync } from 'node:fs'
 import { app, dialog, ipcMain } from 'electron'
 import { detect } from 'jschardet'
@@ -165,12 +165,8 @@ export function bookEvent(win: BrowserWindow, userData: Store) {
       .showOpenDialog(null as unknown as BrowserWindow, {
         filters: [
           {
-            name: 'txt',
+            name: 'book',
             extensions: ['txt']
-          },
-          {
-            name: 'All Files',
-            extensions: ['*']
           }
         ]
       })
@@ -179,18 +175,19 @@ export function bookEvent(win: BrowserWindow, userData: Store) {
         const originalBookList = userData.get('bookList', []) as Book[]
         const bookList: Book[] = res.filePaths
           .filter(item => {
-            return extname(item) === '.txt' && !originalBookList.some(book => book.path === item)
+            return !originalBookList.some(book => book.path === item)
           })
-          .map(item => ({
-            name: parse(item).name,
-            path: item,
-            lastPage: {
-              paragraphIndex: 0,
-              characterIndex: 0
-            },
-            lastChapter: -1,
-            chapterTitleRegExp: '(?<=\\n)第[一二三四五六七八九十百千万1234567890]+章\\s*.+'
-          }))
+          .map(item => {
+            return {
+              name: parse(item).name,
+              path: item,
+              lastPage: {
+                paragraphIndex: 0,
+                characterIndex: 0
+              },
+              chapterTitleRegExp: '(?<=\\n)第[一二三四五六七八九十百千万1234567890]+章\\s*.+'
+            }
+          })
         userData.set('bookList', originalBookList.concat(bookList))
         win?.webContents.send('refreshBookList')
       })

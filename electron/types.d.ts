@@ -10,7 +10,7 @@ interface PageMark {
 interface Book {
   name: string
   path: string
-  lastChapter: number
+  lastChapter?: number
   lastPage: PageMark
   chapterTitleRegExp: string
 }

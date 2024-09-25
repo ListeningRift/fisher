@@ -24,9 +24,34 @@ if (!bookDetail) {
 
 const chapterTitleRegExp = new RegExp(bookDetail?.chapterTitleRegExp || '(?<=\\n)第[一二三四五六七八九十百千万1234567890]+章\\s*.+', 'g')
 
-const chapterTitles = Array.from(book.matchAll(chapterTitleRegExp))
+function getChapterTitles(): {
+  text: string
+  index: number
+}[] {
+  const titles = Array.from(book.matchAll(chapterTitleRegExp))
+  if (titles.length) {
+    return titles.map(match => {
+      return {
+        text: match[0],
+        index: match.index
+      }
+    })
+  } else {
+    const chapterNum = Math.ceil(book.length / 5000)
+    const chapterTitles: ReturnType<typeof getChapterTitles> = []
+    for (let index = 0; index < chapterNum; index++) {
+      chapterTitles.push({
+        index: index * 5000,
+        text: `第${index + 1}章`
+      })
+    }
+    return chapterTitles
+  }
+}
 
-const currentChapter = ref(bookDetail?.lastChapter || -1) // 当前章节序号
+const chapterTitles = getChapterTitles()
+
+const currentChapter = ref(bookDetail?.lastChapter || (chapterTitles[0]?.index === 0 ? 0 : -1)) // 当前章节序号
 function setUserDataChapter(value: number) {
   bookDetail!.lastChapter = value
   window.ipcRenderer.send('setBookList', bookList)
@@ -58,8 +83,13 @@ function handleEmptyCharacter(text: string) {
 }
 
 const chapter = computed(() => {
-  if ((chapterTitles[currentChapter.value]?.index === undefined || chapterTitles[currentChapter.value + 1]?.index === undefined) && currentChapter.value !== -1)
+  if (chapterTitles[currentChapter.value]?.index === undefined && currentChapter.value !== -1) {
     return []
+  }
+  if (chapterTitles[currentChapter.value + 1]?.index === undefined) {
+    return handleCharacter(book.slice(chapterTitles[currentChapter.value].index))
+  }
+
   return handleCharacter(book.slice(currentChapter.value === -1 ? 0 : chapterTitles[currentChapter.value].index, chapterTitles[currentChapter.value + 1].index))
 })
 
@@ -156,15 +186,18 @@ function handlePageIndex() {
   if (index > -1) {
     currentPage.value = index
   } else {
-    for (let i = 0; i < pageMark.value.length; i++) {
+    for (let i = 0; i < pageMark.value.length - 1; i++) {
       if (
-        pageMark.value[i].paragraphIndex < lastPage.paragraphIndex &&
-        pageMark.value[i].characterIndex < lastPage.characterIndex &&
+        pageMark.value[i].paragraphIndex <= lastPage.paragraphIndex &&
+        pageMark.value[i].characterIndex <= lastPage.characterIndex &&
         pageMark.value[i + 1].paragraphIndex > lastPage.characterIndex &&
         pageMark.value[i + 1].characterIndex > lastPage.characterIndex
       ) {
         currentPage.value = i
         break
+      }
+      if (i === pageMark.value.length - 2) {
+        currentPage.value = pageMark.value.length - 1
       }
     }
   }

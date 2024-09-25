@@ -51,15 +51,44 @@ const bookSettings = (book: Book) => {
   )
 }
 
+const clearBookStore = (book: Book) => {
+  Modal.confirm({
+    title: '确认清空记录？',
+    centered: true,
+    okText: '确认',
+    cancelText: '取消',
+    onOk: () => {
+      const newBookList = window.ipcRenderer.getBookList()
+      newBookList.forEach(b => {
+        if (b.path === book.path) {
+          b.lastChapter = undefined
+          b.lastPage = {
+            paragraphIndex: 0,
+            characterIndex: 0
+          }
+        }
+      })
+      window.ipcRenderer.send('setBookList', newBookList)
+    }
+  })
+}
+
 const checkBook = (book: Book) => {
   if (window.ipcRenderer.checkBook(book.path)) {
     message.success('书籍有效')
   } else {
     open(defineAsyncComponent(() => import('../components/checkBookDialog.vue'))).then(isClearAll => {
+      const lastBook = window.ipcRenderer.getUserData('lastBook', '')
       if (isClearAll) {
         const newBookList = window.ipcRenderer.getBookList().filter(b => window.ipcRenderer.checkBook(b.path))
+        if (!newBookList.some(b => b.path === lastBook)) {
+          window.ipcRenderer.setUserData('lastBook', '')
+        }
         window.ipcRenderer.send('setBookList', newBookList)
       } else {
+        if (book.path === lastBook) {
+          window.ipcRenderer.setUserData('lastBook', '')
+        }
         const newBookList = window.ipcRenderer.getBookList().filter(b => b.path !== book.path)
         window.ipcRenderer.send('setBookList', newBookList)
       }
@@ -129,6 +158,12 @@ const handleMove = (oldIndex: number, newIndex: number) => {
             @click="bookSettings(book)"
           >
             书籍设置
+          </a-menu-item>
+          <a-menu-item
+            key="clearBookStore"
+            @click="clearBookStore(book)"
+          >
+            清除书籍记录
           </a-menu-item>
           <a-menu-item
             key="checkBook"
