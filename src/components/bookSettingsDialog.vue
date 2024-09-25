@@ -38,6 +38,7 @@ const onOk = () => {
         label="标题提取正则"
       >
         <a-input v-model:value="formData.chapterTitleRegExp"></a-input>
+        <div class="tips">改变标题正则会清空阅读记录</div>
       </a-form-item>
     </a-form>
   </a-modal>
@@ -55,5 +56,9 @@ const onOk = () => {
 :deep(.ant-form-item-control) {
   flex-basis: 0 !important;
   flex-grow: 1 !important;
+}
+
+.tips {
+  color: #999999;
 }
 </style>

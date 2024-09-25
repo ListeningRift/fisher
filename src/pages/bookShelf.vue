@@ -48,7 +48,19 @@ const bookSettings = (book: Book) => {
     {
       book
     }
-  )
+  ).then(() => {
+    const newBookList = window.ipcRenderer.getBookList()
+    newBookList.forEach(b => {
+      if (b.path === book.path) {
+        b.lastChapter = undefined
+        b.lastPage = {
+          paragraphIndex: 0,
+          characterIndex: 0
+        }
+      }
+    })
+    window.ipcRenderer.send('setBookList', newBookList)
+  })
 }
 
 const clearBookStore = (book: Book) => {
