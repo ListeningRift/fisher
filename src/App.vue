@@ -5,11 +5,13 @@ import settings from './pages/settings.vue'
 import type { Pages } from './contants'
 
 const currentPage = ref<Pages>(window.ipcRenderer.getUserData('lastPage', 'browser'))
-
-const showMainWindow = ref(false)
+const showMoveBar = ref(window.ipcRenderer.getStoreValue('common.showMoveBar', true))
 
 window.ipcRenderer.on('change-page', (_, page) => {
   currentPage.value = page
+})
+window.ipcRenderer.on('update-settings', () => {
+  showMoveBar.value = window.ipcRenderer.getStoreValue('common.showMoveBar', true)
 })
 
 const onMouseLeaveWindow = () => {
@@ -17,7 +19,6 @@ const onMouseLeaveWindow = () => {
     return
   }
   window.ipcRenderer.send('trigger-mode-leave')
-  showMainWindow.value = false
 }
 
 window.addEventListener(
@@ -46,6 +47,7 @@ window.addEventListener(
     @mouseleave="onMouseLeaveWindow"
   >
     <div
+      v-if="showMoveBar"
       v-dragWindow
       class="move-bar"
     >

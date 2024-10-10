@@ -17,7 +17,8 @@ const formData = ref({
   common: {
     alwaysOnTop: window.ipcRenderer.getStoreValue('common.alwaysOnTop', true),
     openAtLogin: window.ipcRenderer.getStoreValue('common.openAtLogin', false),
-    mode: window.ipcRenderer.getStoreValue('common.mode', 'resident') as Mode
+    mode: window.ipcRenderer.getStoreValue('common.mode', 'resident') as Mode,
+    showMoveBar: window.ipcRenderer.getStoreValue('common.showMoveBar', true)
   },
   shortcuts: {
     bossKey: window.ipcRenderer.getStoreValue('shortcuts.bossKey', 'Alt+CommandOrControl+Z') as string
@@ -61,6 +62,7 @@ function save() {
   window.ipcRenderer.setStoreValue('common.alwaysOnTop', formData.value.common.alwaysOnTop)
   window.ipcRenderer.setStoreValue('common.openAtLogin', formData.value.common.openAtLogin)
   window.ipcRenderer.setStoreValue('common.mode', formData.value.common.mode)
+  window.ipcRenderer.setStoreValue('common.showMoveBar', formData.value.common.showMoveBar)
 
   window.ipcRenderer.setStoreValue('shortcuts.bossKey', formData.value.shortcuts.bossKey)
 
@@ -174,6 +176,12 @@ window.addEventListener(
                 <a-radio value="resident">常驻模式</a-radio>
                 <a-radio value="trigger">触发模式</a-radio>
               </a-radio-group>
+            </a-form-item>
+            <a-form-item
+              name="common.showMoveBar"
+              label="展示拖动条"
+            >
+              <a-switch v-model:checked="formData.common.showMoveBar"></a-switch>
             </a-form-item>
           </div>
           <div class="settings-group">
