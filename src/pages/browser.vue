@@ -20,15 +20,22 @@ const handleUrlChange = () => {
 }
 onMounted(() => {
   webviewRef = document.querySelector('.webview')
+  webviewRef.addEventListener('did-start-navigation', (event: any) => {
+    if (event.url.startsWith('http') && event.isMainFrame) {
+      url.value = event.url
+    }
+  })
 })
 
 const goBack = () => {
-  webviewRef.goBack()
-  url.value = webviewRef.getURL()
+  if (webviewRef.canGoBack()) {
+    webviewRef.goBack()
+  }
 }
 const goForward = () => {
-  webviewRef.goForward()
-  url.value = webviewRef.getURL()
+  if (webviewRef.canGoForward()) {
+    webviewRef.goForward()
+  }
 }
 const reload = () => {
   webviewRef.reload()
