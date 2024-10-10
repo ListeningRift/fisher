@@ -31,7 +31,8 @@ export function logEvent() {
   })
 }
 
-export function handleMode(mode: Mode, win: BrowserWindow, iconWin: BrowserWindow, userData: Store, store: Store) {
+export function handleMode(win: BrowserWindow, iconWin: BrowserWindow, userData: Store, store: Store) {
+  const mode = store.get('common.mode', 'resident') as Mode
   if (mode === 'resident') {
     iconWin.hide()
     win.show()
@@ -57,7 +58,7 @@ export function updateSettingsEvent(win: BrowserWindow, iconWin: BrowserWindow, 
       openAtLogin: store.get('common.openAtLogin', false) as boolean
     })
     const mode = store.get('common.mode', 'resident') as Mode
-    handleMode(mode, win, iconWin, userData, store)
+    handleMode(win, iconWin, userData, store)
     win.webContents.send('change-mode', mode)
 
     win.webContents.send('update-settings')

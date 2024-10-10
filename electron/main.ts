@@ -90,7 +90,7 @@ function createWindow() {
   })
   settingsWin.hide()
 
-  handleMode(store.get('common.mode', 'resident') as Mode, win, iconWin, userData, store)
+  handleMode(win, iconWin, userData, store)
 
   resizeEvent(win, userData)
   dragWindow(win, userData)
@@ -134,8 +134,18 @@ app.on('activate', () => {
   }
 })
 
-app.whenReady().then(() => {
-  createWindow()
-  registerGlobalShortCuts(win, iconWin, store)
-  createTray(win, settingsWin, userData)
-})
+const gotTheLock = app.requestSingleInstanceLock()
+if (!gotTheLock) {
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    if (win && iconWin) {
+      handleMode(win, iconWin, userData, store)
+    }
+  })
+  app.whenReady().then(() => {
+    createWindow()
+    registerGlobalShortCuts(win, iconWin, store)
+    createTray(win, settingsWin, userData)
+  })
+}
