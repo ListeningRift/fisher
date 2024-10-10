@@ -115,8 +115,9 @@ const reload = () => {
   left: 0;
   display: flex;
   align-items: center;
-  width: calc(100% - 16px);
+  width: calc(100% - 16px - 10px);
   padding: 8px;
+  margin-left: 5px;
   background: #fff;
   z-index: 10000;
 
@@ -155,5 +156,6 @@ const reload = () => {
   width: 100%;
   height: 100%;
   z-index: 1;
+  background-color: #fff;
 }
 </style>
