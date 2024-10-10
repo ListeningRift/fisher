@@ -54,9 +54,7 @@ export function updateSettingsEvent(win: BrowserWindow, iconWin: BrowserWindow, 
     registerGlobalShortCuts(win, iconWin, store)
     win.setAlwaysOnTop(store.get('common.alwaysOnTop', true) as boolean)
     app.setLoginItemSettings({
-      openAtLogin: store.get('common.openAtLogin', false) as boolean,
-      openAsHidden: true,
-      args: ['--openAsHidden']
+      openAtLogin: store.get('common.openAtLogin', false) as boolean
     })
     const mode = store.get('common.mode', 'resident') as Mode
     handleMode(mode, win, iconWin, userData, store)
