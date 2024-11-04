@@ -137,10 +137,14 @@ export function onTriggerModeTrigger(win: BrowserWindow, iconWin: BrowserWindow,
     }
     iconWin.show()
     win.hide()
+
+    win.webContents.send('visible-change', false)
   })
   ipcMain.on('trigger-mode-enter', () => {
     iconWin.hide()
     win.show()
+
+    win.webContents.send('visible-change', true)
   })
 }
 

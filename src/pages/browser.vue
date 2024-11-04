@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onBeforeMount, onMounted, ref } from 'vue'
 import { Input as AInput } from 'ant-design-vue'
 import chevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue'
 import chevronRightIcon from 'vue-material-design-icons/ChevronRight.vue'
@@ -18,6 +18,12 @@ const url = ref('https://www.bilibili.com/')
 const handleUrlChange = () => {
   webviewRef.loadURL(url.value)
 }
+
+const onVisibleChange = (_: any, visible: boolean) => {
+  if (visible) {
+    webviewRef.focus()
+  }
+}
 onMounted(() => {
   webviewRef = document.querySelector('.webview')
   webviewRef.addEventListener('did-start-navigation', (event: any) => {
@@ -25,6 +31,11 @@ onMounted(() => {
       url.value = event.url
     }
   })
+
+  window.ipcRenderer.on('visible-change', onVisibleChange)
+})
+onBeforeMount(() => {
+  window.ipcRenderer.off('visible-change', onVisibleChange)
 })
 
 const goBack = () => {

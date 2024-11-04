@@ -10,16 +10,20 @@ export function registerGlobalShortCuts(win: BrowserWindow | null, iconWin: Brow
     if (mode === 'resident') {
       if (win?.isVisible()) {
         win?.hide()
+        win?.webContents.send('visible-change', false)
       } else {
         win?.show()
+        win?.webContents.send('visible-change', true)
       }
     } else if (mode === 'trigger') {
       if (win?.isVisible() || iconWin?.isVisible()) {
         win?.hide()
         iconWin?.hide()
+        win?.webContents.send('visible-change', false)
       } else {
         win?.hide()
         iconWin?.show()
+        win?.webContents.send('visible-change', false)
       }
     }
   })
