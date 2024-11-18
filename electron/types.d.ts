@@ -14,3 +14,8 @@ interface Book {
   lastPage: PageMark
   chapterTitleRegExp: string
 }
+
+interface UserScript {
+  scope: string
+  scriptContent: string
+}

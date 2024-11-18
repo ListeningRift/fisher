@@ -354,7 +354,7 @@ const canPrevChapter = computed(() => {
 .book-content {
   flex-grow: 1;
   margin: 0 8px;
-  width: calc(100% - 16px);
+  width: 100%;
   height: 0;
   overflow: hidden;
 }
@@ -364,7 +364,7 @@ const canPrevChapter = computed(() => {
   align-items: center;
   justify-content: flex-end;
   margin: 0 8px;
-  width: calc(100% - 16px);
+  width: 100%;
   height: 24px;
   font-size: 12px;
 

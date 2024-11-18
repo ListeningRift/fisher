@@ -210,8 +210,8 @@ const handleMove = (oldIndex: number, newIndex: number) => {
   display: flex;
   flex-wrap: wrap;
   padding: 16px;
-  width: calc(100% - 32px);
-  height: calc(100% - 32px);
+  width: 100%;
+  height: 100%;
   background-color: #f4e9e7;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
@@ -238,8 +238,8 @@ const handleMove = (oldIndex: number, newIndex: number) => {
 .book-inner {
   position: relative;
   padding: 4px;
-  width: calc(100% - 8px);
-  height: calc(100% - 8px);
+  width: 100%;
+  height: 100%;
   font-size: 14px;
   color: #6d6260;
   border-radius: 4px;

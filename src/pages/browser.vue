@@ -13,6 +13,8 @@ const handleMouseEnter = () => {
   urlShow.value = true
 }
 
+const scripts = ref<UserScript[]>(JSON.parse(window.ipcRenderer.getStoreValue('scripts.scriptList')))
+
 const url = ref('https://www.bilibili.com/')
 
 const handleUrlChange = () => {
@@ -29,6 +31,9 @@ onMounted(() => {
   webviewRef.addEventListener('did-start-navigation', (event: any) => {
     if (event.url.startsWith('http') && event.isMainFrame) {
       url.value = event.url
+      scripts.value.forEach(item => {
+        if (new RegExp(item.scope).test(url.value)) webviewRef.executeJavaScript(item.scriptContent)
+      })
     }
   })
 
@@ -126,7 +131,7 @@ const reload = () => {
   left: 0;
   display: flex;
   align-items: center;
-  width: calc(100% - 16px - 10px);
+  width: calc(100% - 10px);
   padding: 8px;
   margin-left: 5px;
   background: #fff;
@@ -158,8 +163,8 @@ const reload = () => {
 }
 
 .webview-wrapper {
-  width: calc(100% - 10px);
-  height: calc(100% - 4px);
+  width: 100%;
+  height: 100%;
   padding: 0 5px 4px;
 }
 

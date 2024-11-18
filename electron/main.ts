@@ -109,7 +109,7 @@ function createWindow() {
     win.loadURL(VITE_DEV_SERVER_URL)
     win.webContents.openDevTools()
     settingsWin.loadURL(VITE_DEV_SERVER_URL + '/settings')
-    // settingsWin.webContents.openDevTools()
+    settingsWin.webContents.openDevTools()
   } else {
     win.loadFile(join(RENDERER_DIST, 'index.html'))
     settingsWin.loadFile(join(RENDERER_DIST, 'settings.html'))
