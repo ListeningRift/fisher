@@ -20,7 +20,11 @@ export function dragWindow(win: BrowserWindow | null, userData: Store) {
     XY.y = cursorPosition.y - winPosition[1]
     clearInterval(IntervalId)
     IntervalId = setInterval(() => {
-      refreshWinPosition()
+      if (win?.isVisible()) {
+        refreshWinPosition()
+      } else {
+        clearInterval(IntervalId)
+      }
     })
   })
 

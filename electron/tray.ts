@@ -20,6 +20,37 @@ function reload(win: BrowserWindow, settingsWin: BrowserWindow) {
   settingsWin.webContents.reload()
 }
 
+function resetWindowPosition(win: BrowserWindow, settingsWin: BrowserWindow) {
+  // 打断可能正在进行的拖动操作
+  // 通过先隐藏窗口再显示窗口来打断拖动
+  const isMainVisible = win.isVisible()
+  const isSettingsVisible = settingsWin.isVisible()
+
+  if (isMainVisible) {
+    win.hide()
+    setTimeout(() => {
+      // 重置主窗口位置到屏幕中央
+      win.center()
+      win.show()
+    }, 10)
+  } else {
+    // 即使窗口不可见也重置位置
+    win.center()
+  }
+
+  if (isSettingsVisible) {
+    settingsWin.hide()
+    setTimeout(() => {
+      // 重置设置窗口位置到屏幕中央
+      settingsWin.center()
+      settingsWin.show()
+    }, 10)
+  } else {
+    // 即使窗口不可见也重置位置
+    settingsWin.center()
+  }
+}
+
 export default function createTray(win: BrowserWindow | null, settingsWin: BrowserWindow | null, userData: Store) {
   tray = new Tray(nativeImage.createFromPath(path.join(process.env.VITE_PUBLIC, 'logo.png')))
   tray.setToolTip('Fisher')
@@ -30,6 +61,7 @@ export default function createTray(win: BrowserWindow | null, settingsWin: Brows
     { type: 'separator' },
     { label: '设置', click: () => openSettings(settingsWin!) },
     { label: '刷新', click: () => reload(win!, settingsWin!) },
+    { label: '重置窗口位置', click: () => resetWindowPosition(win!, settingsWin!) },
     { type: 'separator' },
     { label: '显示', click: () => win?.show() },
     { label: '退出', role: 'quit', click: () => app.quit() }
