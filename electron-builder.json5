@@ -13,14 +13,14 @@
   ],
   "mac": {
     "target": [
-      "dmg"
+      "zip", "7z", "dmg"
     ],
-    "artifactName": "${productName}-${version}-Installer.${ext}",
+    "category": "public.app-category.utilities",
     "icon": "public/logo.png",
   },
   "win": {
     "target": [
-      "portable"
+      "zip", "7z", "portable"
     ],
     "artifactName": "${productName}-${version}-Setup.${ext}",
     "icon": "public/logo.png",
@@ -29,12 +29,13 @@
     "oneClick": false,
     "perMachine": false,
     "allowToChangeInstallationDirectory": true,
-    "deleteAppDataOnUninstall": false
+    "deleteAppDataOnUninstall": true
   },
   "linux": {
     "target": [
-      "AppImage"
+      "deb", "zip", "7z", "apk", "rpm", "AppImage", "pacman"
     ],
-    "artifactName": "${productName}-${version}.${ext}"
+    "icon": "public/logo.png",
+    category: 'Network'
   }
 }
