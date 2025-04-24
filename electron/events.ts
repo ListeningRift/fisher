@@ -32,20 +32,38 @@ export function logEvent() {
 }
 
 export function handleMode(win: BrowserWindow, iconWin: BrowserWindow, userData: Store, store: Store) {
+  const logger = log4js.getLogger()
   const mode = store.get('common.mode', 'resident') as Mode
+  logger.info(`处理窗口模式: ${mode}`)
+
   if (mode === 'resident') {
+    logger.info('常驻模式: 隐藏图标窗口，显示主窗口')
     iconWin.hide()
-    win.show()
+    if (!win.isVisible()) {
+      win.show()
+      win.webContents.send('visible-change', true)
+      logger.info('主窗口已显示')
+    }
   } else if (mode === 'trigger') {
+    logger.info('触发模式: 设置图标窗口位置')
     const position = userData.get('winPosition', undefined) as number[] | undefined
     const size = userData.get('winSize', undefined) as number[] | undefined
     if (position && size) {
       const newPosition = handleTriggerPosition(store.get('triggerMode.triggerPosition', 'left-top') as TriggerPosition, position, size)
-      if (newPosition[0] === undefined || newPosition[1] === undefined) return
+      if (newPosition[0] === undefined || newPosition[1] === undefined) {
+        logger.error('无法计算图标窗口位置')
+        return
+      }
+      logger.info(`设置图标窗口位置: [${newPosition[0]}, ${newPosition[1]}]`)
       iconWin.setPosition(newPosition[0], newPosition[1])
     }
     win.hide()
-    iconWin.show()
+    logger.info('主窗口已隐藏')
+    if (!iconWin.isVisible()) {
+      iconWin.show()
+      logger.info('图标窗口已显示')
+    }
+    win.webContents.send('visible-change', false)
   }
 }
 

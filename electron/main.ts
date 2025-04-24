@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { app, BrowserWindow, Menu } from 'electron'
 import Store from 'electron-store'
+import * as log4js from 'log4js'
 import { dragWindow, dragSettingsWindow, resizeEvent } from './window'
 import createTray from './tray'
 import { registerGlobalShortCuts } from './shortcuts'
@@ -19,6 +20,14 @@ import {
 } from './events'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
+
+// 配置日志
+log4js.configure({
+  appenders: { trace: { type: 'file', filename: 'trace.log', maxLogSize: 500000 } },
+  categories: { default: { appenders: ['trace'], level: 'trace' } }
+})
+const logger = log4js.getLogger()
+logger.level = 'info'
 
 process.env.APP_ROOT = join(__dirname, '..')
 
@@ -52,7 +61,8 @@ function createWindow() {
     x: (userData.get('winPosition', [undefined, undefined]) as number[])[0],
     y: (userData.get('winPosition', [undefined, undefined]) as number[])[1],
     width: (userData.get('winSize', [undefined, undefined]) as number[])[0],
-    height: (userData.get('winSize', [undefined, undefined]) as number[])[1]
+    height: (userData.get('winSize', [undefined, undefined]) as number[])[1],
+    show: false
   })
 
   const position = userData.get('winPosition', undefined) as number[]
@@ -72,7 +82,8 @@ function createWindow() {
     y: iconPosition[1],
     width: 50,
     height: 50,
-    resizable: false
+    resizable: false,
+    show: false
   })
   iconWin.loadFile(join(process.env.VITE_PUBLIC, 'icon.html'))
 
@@ -86,11 +97,9 @@ function createWindow() {
     },
     width: 900,
     minWidth: 800,
-    height: 600
+    height: 600,
+    show: false
   })
-  settingsWin.hide()
-
-  handleMode(win, iconWin, userData, store)
 
   resizeEvent(win, userData)
   dragWindow(win, userData)
@@ -114,6 +123,16 @@ function createWindow() {
     win.loadFile(join(RENDERER_DIST, 'index.html'))
     settingsWin.loadFile(join(RENDERER_DIST, 'settings.html'))
   }
+
+  win.webContents.on('did-finish-load', () => {
+    logger.info('主窗口内容加载完成，准备显示')
+    setTimeout(() => {
+      if (win && iconWin) {
+        logger.info('应用模式：' + store.get('common.mode', 'resident'))
+        handleMode(win, iconWin, userData, store)
+      }
+    }, 500)
+  })
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -147,5 +166,11 @@ if (!gotTheLock) {
     createWindow()
     registerGlobalShortCuts(win, iconWin, store)
     createTray(win, settingsWin, userData)
+
+    // 设置自启动选项
+    app.setLoginItemSettings({
+      openAtLogin: store.get('common.openAtLogin', false) as boolean,
+      openAsHidden: false // 确保启动时不隐藏
+    })
   })
 }
