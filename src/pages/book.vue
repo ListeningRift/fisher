@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeMount, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onBeforeMount, onMounted, ref } from 'vue'
+import { useDialog } from 'use-dialog-vue3'
 import { debounce } from '../utils/debounce'
 
 let { fontSize, color, backgroundColor, pageDownKey, pageUpKey } = getConfig()
@@ -104,8 +105,22 @@ function setUserDataPageIndex(value: number) {
 }
 
 const showChapter = computed(() => {
-  const startMark = pageMark.value[currentPage.value]
-  const endMark = pageMark.value[currentPage.value + 1]
+  // 确保pageMark有足够的元素，避免空白页
+  if (pageMark.value.length < 2) {
+    // 如果章节内容存在，返回章节的第一部分
+    if (chapter.value.length > 0) {
+      const endIndex = Math.min(100, chapter.value[0].length) // 显示前100个字符或全部
+      return [chapter.value[0].slice(0, endIndex)]
+    }
+    return []
+  }
+
+  // 获取安全的页面索引
+  const safeCurrentPage = currentPage.value >= pageMark.value.length - 1 ? pageMark.value.length - 2 : currentPage.value
+
+  const startMark = pageMark.value[safeCurrentPage]
+  const endMark = pageMark.value[safeCurrentPage + 1]
+
   if (!endMark || !startMark) return []
   if (endMark.paragraphIndex === startMark.paragraphIndex) {
     return [chapter.value[startMark.paragraphIndex].slice(startMark.characterIndex, endMark.characterIndex)]
@@ -177,6 +192,19 @@ async function calculateParagraphNumber() {
     }
   }
   bookPageRef.value.removeChild(div)
+
+  // 添加安全检查，确保页面标记至少有两个元素（开始和结束）
+  if (pageMark.value.length < 2 && chapter.value.length > 0) {
+    pageMark.value.push({
+      paragraphIndex: 0,
+      characterIndex: chapter.value[0].length
+    })
+  }
+
+  // 确保currentPage.value不超出有效范围
+  if (currentPage.value >= pageMark.value.length - 1) {
+    currentPage.value = Math.max(0, pageMark.value.length - 2)
+  }
 }
 
 function handlePageIndex() {
@@ -200,6 +228,13 @@ function handlePageIndex() {
         currentPage.value = pageMark.value.length - 1
       }
     }
+  }
+
+  // 确保currentPage.value在有效范围内
+  if (pageMark.value.length < 2) {
+    currentPage.value = 0
+  } else if (currentPage.value >= pageMark.value.length - 1) {
+    currentPage.value = pageMark.value.length - 2
   }
 }
 
@@ -294,6 +329,26 @@ const canNextChapter = computed(() => {
 const canPrevChapter = computed(() => {
   return currentChapter.value > -1
 })
+
+const { open } = useDialog()
+const showChapterDialog = () => {
+  open(
+    defineAsyncComponent(() => import('../components/chapterTitlesDialog.vue')),
+    {
+      book: bookDetail
+    }
+  ).then(newBook => {
+    if (newBook && newBook.lastChapter !== undefined) {
+      currentChapter.value = newBook.lastChapter
+      setUserDataChapter(currentChapter.value)
+      currentPage.value = 0
+      setUserDataPageIndex(currentPage.value)
+      nextTick(() => {
+        calculateParagraphNumber()
+      })
+    }
+  })
+}
 </script>
 
 <template>
@@ -318,21 +373,34 @@ const canPrevChapter = computed(() => {
       ></p>
     </div>
     <div class="book-info-bar">
-      <div
-        class="book-info-bar-item book-info-bar-button"
-        :class="{ disabled: !canPrevChapter }"
-        @click="prevChapter('start')"
-      >
-        <span>上一章</span>
+      <div class="book-info-bar-left">
+        <div class="book-info-bar-item book-info-bar-button">
+          <span>当前章节：{{ chapterTitles[currentChapter].text }}</span>
+        </div>
       </div>
-      <div
-        class="book-info-bar-item book-info-bar-button"
-        :class="{ disabled: !canNextChapter }"
-        @click="nextChapter"
-      >
-        <span>下一章</span>
+      <div class="book-info-bar-right">
+        <div
+          class="book-info-bar-item book-info-bar-button"
+          @click="showChapterDialog"
+        >
+          <span>目录</span>
+        </div>
+        <div
+          class="book-info-bar-item book-info-bar-button"
+          :class="{ disabled: !canPrevChapter }"
+          @click="prevChapter('start')"
+        >
+          <span>上一章</span>
+        </div>
+        <div
+          class="book-info-bar-item book-info-bar-button"
+          :class="{ disabled: !canNextChapter }"
+          @click="nextChapter"
+        >
+          <span>下一章</span>
+        </div>
+        <div class="book-info-bar-item">{{ percent }}%</div>
       </div>
-      <div class="book-info-bar-item">{{ percent }}%</div>
     </div>
   </div>
 </template>
@@ -347,13 +415,14 @@ const canPrevChapter = computed(() => {
   border-bottom-right-radius: 6px;
 
   :deep(p) {
+    margin-top: 12px;
     margin-bottom: 0;
   }
 }
 
 .book-content {
   flex-grow: 1;
-  margin: 0 8px;
+  padding: 0 8px;
   width: 100%;
   height: 0;
   overflow: hidden;
@@ -363,15 +432,38 @@ const canPrevChapter = computed(() => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  margin: 0 8px;
+  padding: 0 8px;
   width: 100%;
   height: 24px;
   font-size: 12px;
 
+  .book-info-bar-left {
+    display: flex;
+    align-items: center;
+    margin-right: auto;
+
+    .book-info-bar-item {
+      margin-right: 12px;
+
+      &:not(:first-child) {
+        padding-left: 12px;
+        border-left: 1px solid #666666;
+      }
+    }
+  }
+
+  .book-info-bar-right {
+    display: flex;
+    align-items: center;
+
+    .book-info-bar-item {
+      margin-left: 12px;
+      padding-left: 12px;
+    }
+  }
+
   .book-info-bar-item {
     position: relative;
-    margin-left: 12px;
-    padding-left: 12px;
 
     &:not(:first-child) {
       border-left: 1px solid #666666;
