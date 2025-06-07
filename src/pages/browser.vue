@@ -9,8 +9,30 @@ import reloadIcon from 'vue-material-design-icons/Reload.vue'
 let webviewRef: any = null
 
 const urlShow = ref(false)
+const isInputFocused = ref(false)
+const isMouseInUrlBar = ref(false)
+
 const handleMouseEnter = () => {
   urlShow.value = true
+  isMouseInUrlBar.value = true
+}
+
+const handleMouseLeave = () => {
+  isMouseInUrlBar.value = false
+  if (!isInputFocused.value) {
+    urlShow.value = false
+  }
+}
+
+const handleInputFocus = () => {
+  isInputFocused.value = true
+}
+
+const handleInputBlur = () => {
+  isInputFocused.value = false
+  if (!isMouseInUrlBar.value) {
+    urlShow.value = false
+  }
 }
 
 const scripts = ref<UserScript[]>(JSON.parse(window.ipcRenderer.getStoreValue('scripts.scriptList')))
@@ -67,7 +89,7 @@ const reload = () => {
     <div
       :style="{ display: urlShow ? 'flex' : 'none' }"
       class="url-bar"
-      @mouseleave="urlShow = false"
+      @mouseleave="handleMouseLeave"
     >
       <div
         class="url-bar-button left-button"
@@ -81,7 +103,11 @@ const reload = () => {
       >
         <chevron-right-icon fill-color="#666666"></chevron-right-icon>
       </div>
-      <a-input v-model:value="url"></a-input>
+      <a-input
+        v-model:value="url"
+        @focus="handleInputFocus"
+        @blur="handleInputBlur"
+      ></a-input>
       <div
         class="url-bar-button right-button"
         @click="handleUrlChange"
@@ -134,7 +160,7 @@ const reload = () => {
   width: calc(100% - 10px);
   padding: 8px;
   margin-left: 5px;
-  background: #fff;
+  background: #333333;
   z-index: 10000;
 
   .url-bar-button {
@@ -159,6 +185,9 @@ const reload = () => {
   .ant-input {
     width: 100%;
     height: 32px;
+    background: #333333;
+    color: #fff;
+    border-color: #e5e5e5;
   }
 }
 
