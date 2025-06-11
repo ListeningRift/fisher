@@ -23,7 +23,7 @@ if (!bookDetail) {
   window.ipcRenderer.send('change-page', 'bookShelf')
 }
 
-const chapterTitleRegExp = new RegExp(bookDetail?.chapterTitleRegExp || '(?<=\\n)第[一二三四五六七八九十百千万1234567890]+章\\s*.+', 'g')
+const chapterTitleRegExp = new RegExp(bookDetail?.chapterTitleRegExp || '(?<=\\n)\\s*第[一二三四五六七八九十百千万1234567890]+章\\s*.+', 'g')
 
 function getChapterTitles(): {
   text: string

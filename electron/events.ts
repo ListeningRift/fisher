@@ -206,7 +206,7 @@ export function bookEvent(win: BrowserWindow, userData: Store) {
                 paragraphIndex: 0,
                 characterIndex: 0
               },
-              chapterTitleRegExp: '(?<=\\n)第[一二三四五六七八九十百千万1234567890]+章\\s*.+'
+              chapterTitleRegExp: '(?<=\\n)s*第[一二三四五六七八九十百千万1234567890]+章\\s*.+'
             }
           })
         userData.set('bookList', originalBookList.concat(bookList))

@@ -10,7 +10,7 @@ const props = defineProps<{
 const { visible, close } = useDialog()
 
 const book = window.ipcRenderer.getBookContent(props.book.path)
-const chapterTitleRegExp = new RegExp(props.book.chapterTitleRegExp || '(?<=\\n)第[一二三四五六七八九十百千万1234567890]+章\\s*.+', 'g')
+const chapterTitleRegExp = new RegExp(props.book.chapterTitleRegExp || '(?<=\\n)\\s*第[一二三四五六七八九十百千万1234567890]+章\\s*.+', 'g')
 const chapterTitles = Array.from(book.matchAll(chapterTitleRegExp))
 const bookList = window.ipcRenderer.getBookList()
 const bookDetail = bookList.find(b => b.path === props.book.path)
@@ -44,7 +44,7 @@ const selectChapter = (index: number) => {
         class="chapter-title"
         @click="selectChapter(index)"
       >
-        {{ title[0] }}
+        {{ title[0].trim() }}
       </div>
     </div>
     <div class="pager">

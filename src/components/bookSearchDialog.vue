@@ -13,7 +13,7 @@ const { visible, close } = useDialog()
 
 const book = window.ipcRenderer.getBookContent(props.book.path)
 const bookList = window.ipcRenderer.getBookList()
-const chapterTitleRegExp = new RegExp(props.book.chapterTitleRegExp || '(?<=\\n)第[一二三四五六七八九十百千万1234567890]+章\\s*.+', 'g')
+const chapterTitleRegExp = new RegExp(props.book.chapterTitleRegExp || '(?<=\\n)\\s*第[一二三四五六七八九十百千万1234567890]+章\\s*.+', 'g')
 const chapterTitles = Array.from(book.matchAll(chapterTitleRegExp))
 const bookDetail = bookList.find(b => b.path === props.book.path)
 
