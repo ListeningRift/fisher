@@ -375,7 +375,7 @@ const showChapterDialog = () => {
     <div class="book-info-bar">
       <div class="book-info-bar-left">
         <div class="book-info-bar-item book-info-bar-button">
-          <span>当前章节：{{ chapterTitles[currentChapter].text }}</span>
+          <span v-if="chapterTitles[currentChapter]">当前章节：{{ chapterTitles[currentChapter]?.text }}</span>
         </div>
       </div>
       <div class="book-info-bar-right">
