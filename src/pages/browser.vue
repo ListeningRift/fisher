@@ -1,16 +1,23 @@
 <script setup lang="ts">
-import { onBeforeMount, onMounted, ref } from 'vue'
-import { Input as AInput } from 'ant-design-vue'
+import { onBeforeMount, onMounted, ref, computed } from 'vue'
+import { Input as AInput, Dropdown as ADropdown, Menu as AMenu, MenuItem as AMenuItem } from 'ant-design-vue'
 import chevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue'
 import chevronRightIcon from 'vue-material-design-icons/ChevronRight.vue'
 import arrowRightIcon from 'vue-material-design-icons/ArrowRight.vue'
 import reloadIcon from 'vue-material-design-icons/Reload.vue'
+import heartIcon from 'vue-material-design-icons/Heart.vue'
+import heartOutlineIcon from 'vue-material-design-icons/HeartOutline.vue'
+import deleteIcon from 'vue-material-design-icons/Delete.vue'
 
 let webviewRef: any = null
 
 const urlShow = ref(false)
 const isInputFocused = ref(false)
 const isMouseInUrlBar = ref(false)
+
+// 收藏夹相关状态
+const bookmarks = ref<Bookmark[]>([])
+const isDropdownOpen = ref(false)
 
 const handleMouseEnter = () => {
   urlShow.value = true
@@ -19,7 +26,7 @@ const handleMouseEnter = () => {
 
 const handleMouseLeave = () => {
   isMouseInUrlBar.value = false
-  if (!isInputFocused.value) {
+  if (!isInputFocused.value && !isDropdownOpen.value) {
     urlShow.value = false
   }
 }
@@ -30,7 +37,52 @@ const handleInputFocus = () => {
 
 const handleInputBlur = () => {
   isInputFocused.value = false
-  if (!isMouseInUrlBar.value) {
+  if (!isMouseInUrlBar.value && !isDropdownOpen.value) {
+    urlShow.value = false
+  }
+}
+
+// 收藏夹功能
+const loadBookmarks = () => {
+  const saved = window.ipcRenderer.getStoreValue('browser.bookmarks', '[]')
+  bookmarks.value = JSON.parse(saved)
+}
+
+const saveBookmarks = () => {
+  window.ipcRenderer.setStoreValue('browser.bookmarks', JSON.stringify(bookmarks.value))
+}
+
+const isBookmarked = computed(() => {
+  return bookmarks.value.some(bookmark => bookmark.url === url.value)
+})
+
+const addBookmark = () => {
+  if (isBookmarked.value) return
+
+  const newBookmark: Bookmark = {
+    id: Date.now().toString(),
+    url: url.value,
+    title: webviewRef?.getTitle() || url.value,
+    createTime: Date.now()
+  }
+
+  bookmarks.value.unshift(newBookmark)
+  saveBookmarks()
+}
+
+const removeBookmark = (bookmarkId: string) => {
+  bookmarks.value = bookmarks.value.filter(bookmark => bookmark.id !== bookmarkId)
+  saveBookmarks()
+}
+
+const navigateToBookmark = (bookmark: Bookmark) => {
+  url.value = bookmark.url
+  webviewRef.loadURL(bookmark.url)
+}
+
+const handleDropdownVisibleChange = (visible: boolean) => {
+  isDropdownOpen.value = visible
+  if (!visible && !isInputFocused.value && !isMouseInUrlBar.value) {
     urlShow.value = false
   }
 }
@@ -60,6 +112,9 @@ onMounted(() => {
   })
 
   window.ipcRenderer.on('visible-change', onVisibleChange)
+
+  // 加载收藏夹数据
+  loadBookmarks()
 })
 onBeforeMount(() => {
   window.ipcRenderer.off('visible-change', onVisibleChange)
@@ -107,6 +162,7 @@ const reload = () => {
         v-model:value="url"
         @focus="handleInputFocus"
         @blur="handleInputBlur"
+        @keyup.enter="handleUrlChange"
       ></a-input>
       <div
         class="url-bar-button right-button"
@@ -120,7 +176,63 @@ const reload = () => {
       >
         <reload-icon fill-color="#666666"></reload-icon>
       </div>
+      <div
+        class="url-bar-button right-button bookmark-button"
+        @click="addBookmark"
+      >
+        <heart-icon
+          v-if="isBookmarked"
+          fill-color="#ff4757"
+        ></heart-icon>
+        <heart-outline-icon
+          v-else
+          fill-color="#666666"
+        ></heart-outline-icon>
+      </div>
+      <a-dropdown
+        :trigger="['click']"
+        placement="topRight"
+        @visible-change="handleDropdownVisibleChange"
+      >
+        <div class="url-bar-button right-button bookmarks-list-button">
+          <div class="bookmarks-icon">☰</div>
+        </div>
+        <template #overlay>
+          <div class="bookmarks-dropdown">
+            <div class="bookmarks-header">收藏夹</div>
+            <div
+              v-if="bookmarks.length === 0"
+              class="bookmarks-empty"
+            >
+              暂无收藏
+            </div>
+            <div
+              v-for="bookmark in bookmarks"
+              :key="bookmark.id"
+              class="bookmark-item"
+            >
+              <div
+                class="bookmark-content"
+                @click="navigateToBookmark(bookmark)"
+              >
+                <div class="bookmark-title">{{ bookmark.title }}</div>
+                <div class="bookmark-url">{{ bookmark.url }}</div>
+              </div>
+              <div
+                class="bookmark-delete"
+                @click="removeBookmark(bookmark.id)"
+              >
+                <delete-icon
+                  :size="16"
+                  fill-color="#999"
+                ></delete-icon>
+              </div>
+            </div>
+          </div>
+        </template>
+      </a-dropdown>
     </div>
+
     <div class="webview-wrapper">
       <webview
         class="webview"
@@ -188,6 +300,106 @@ const reload = () => {
     background: #333333;
     color: #fff;
     border-color: #e5e5e5;
+  }
+
+  .bookmark-button {
+    &:hover {
+      background: #e5e5e5;
+    }
+  }
+
+  .bookmarks-list-button {
+    &:hover {
+      background: #e5e5e5;
+    }
+
+    .bookmarks-icon {
+      font-size: 16px;
+      color: #666666;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+.bookmarks-dropdown {
+  width: 300px;
+  max-height: 400px;
+  background: #333333;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow-y: auto;
+
+  .bookmarks-header {
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    border-bottom: 1px solid #555;
+  }
+
+  .bookmarks-empty {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+  }
+
+  .bookmark-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-bottom: 1px solid #555;
+
+    &:hover {
+      background: #404040;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .bookmark-content {
+      flex: 1;
+      cursor: pointer;
+      min-width: 0;
+    }
+
+    .bookmark-title {
+      font-size: 14px;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+
+    .bookmark-url {
+      font-size: 12px;
+      color: #999;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bookmark-delete {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-left: 8px;
+
+      &:hover {
+        background: #555;
+      }
+    }
   }
 }
 

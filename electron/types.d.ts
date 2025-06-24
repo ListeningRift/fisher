@@ -19,3 +19,10 @@ interface UserScript {
   scope: string
   scriptContent: string
 }
+
+interface Bookmark {
+  id: string
+  url: string
+  title: string
+  createTime: number
+}
