@@ -78,6 +78,8 @@ const removeBookmark = (bookmarkId: string) => {
 const navigateToBookmark = (bookmark: Bookmark) => {
   url.value = bookmark.url
   webviewRef.loadURL(bookmark.url)
+  isDropdownOpen.value = false
+  urlShow.value = false
 }
 
 const handleDropdownVisibleChange = (visible: boolean) => {
