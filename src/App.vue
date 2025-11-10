@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, defineAsyncComponent } from 'vue'
 import { pageMap } from './contants'
-import settings from './pages/settings.vue'
 import type { Pages } from './contants'
+
+const settings = defineAsyncComponent(() => import('./pages/settings.vue'))
 
 const currentPage = ref<Pages>(window.ipcRenderer.getUserData('lastPage', 'browser'))
 const showMoveBar = ref(window.ipcRenderer.getStoreValue('common.showMoveBar', true))

@@ -10,6 +10,15 @@ export default defineConfig({
       input: {
         main: path.resolve(__dirname, 'index.html'),
         settings: path.resolve(__dirname, 'settings.html')
+      },
+      output: {
+        manualChunks: {
+          // 将 Vue 核心库单独打包
+          'vue-vendor': ['vue'],
+          // 将 ant-design-vue 单独打包
+          'antd-vendor': ['ant-design-vue']
+          // monaco-editor 会通过动态导入自动分包，无需手动配置
+        }
       }
     }
   },

@@ -89,7 +89,7 @@ const handleDropdownVisibleChange = (visible: boolean) => {
   }
 }
 
-const scripts = ref<UserScript[]>(JSON.parse(window.ipcRenderer.getStoreValue('scripts.scriptList')))
+const scripts = ref<UserScript[]>(JSON.parse(window.ipcRenderer.getStoreValue('scripts.scriptList') || '[]'))
 
 const url = ref('https://www.bilibili.com/')
 

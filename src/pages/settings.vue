@@ -14,7 +14,7 @@ import {
 import plusIcon from 'vue-material-design-icons/Plus.vue'
 import deleteOutlineIcon from 'vue-material-design-icons/DeleteOutline.vue'
 import shortcutsInput from '../components/shortcutsInput.vue'
-import { editor } from '../utils/monaco'
+import { loadMonaco } from '../utils/monaco'
 import { debounce } from '../utils/debounce'
 
 const formData = ref({
@@ -44,8 +44,9 @@ const formData = ref({
 
 const currentScriptIndex = ref<number>()
 const editorBox = ref<HTMLElement>()
-const initEditor = () => {
-  return editor.create(editorBox.value!, {
+const initEditor = async () => {
+  const editorModule = await loadMonaco()
+  return editorModule?.editor.create(editorBox.value!, {
     value: '',
     language: 'javascript',
     readOnly: true,
@@ -67,9 +68,9 @@ const initEditor = () => {
     overviewRulerBorder: false
   })
 }
-let editorInstance: editor.IStandaloneCodeEditor
-onMounted(() => {
-  editorInstance = initEditor()
+let editorInstance: any
+onMounted(async () => {
+  editorInstance = await initEditor()
   window.addEventListener(
     'resize',
     debounce(() => {
