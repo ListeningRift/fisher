@@ -4,6 +4,7 @@ import { Modal as AModal, Pagination as APagination, Input as AInput } from 'ant
 import { useDialog } from 'use-dialog-vue3'
 import magnifyIcon from 'vue-material-design-icons/Magnify.vue'
 import { debounce } from '../utils/debounce'
+import { defaultChapterTitleRegExpStr } from '../utils/constants'
 
 const props = defineProps<{
   book: Book
@@ -13,7 +14,7 @@ const { visible, close } = useDialog()
 
 const book = window.ipcRenderer.getBookContent(props.book.path)
 const bookList = window.ipcRenderer.getBookList()
-const chapterTitleRegExp = new RegExp(props.book.chapterTitleRegExp || '(?<=\\n)\\s*第[一二三四五六七八九十百千万1234567890]+章\\s*.+', 'g')
+const chapterTitleRegExp = new RegExp(props.book.chapterTitleRegExp || defaultChapterTitleRegExpStr, 'g')
 const chapterTitles = Array.from(book.matchAll(chapterTitleRegExp))
 const bookDetail = bookList.find(b => b.path === props.book.path)
 

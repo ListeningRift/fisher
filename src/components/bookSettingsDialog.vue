@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { Modal as AModal, Form as AForm, FormItem as AFormItem, Input as AInput } from 'ant-design-vue'
 import { useDialog } from 'use-dialog-vue3'
+import { defaultChapterTitleRegExpStr } from '../utils/constants'
 
 const props = defineProps<{
   book: Book
@@ -10,7 +11,7 @@ const props = defineProps<{
 const { visible, close } = useDialog()
 
 const formData = ref({
-  chapterTitleRegExp: props.book.chapterTitleRegExp || '(?<=\\n)\\s*第[一二三四五六七八九十百千万1234567890]+章\\s*.+'
+  chapterTitleRegExp: props.book.chapterTitleRegExp || defaultChapterTitleRegExpStr
 })
 
 const onOk = () => {

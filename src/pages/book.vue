@@ -2,6 +2,7 @@
 import { computed, defineAsyncComponent, nextTick, onBeforeMount, onMounted, ref } from 'vue'
 import { useDialog } from 'use-dialog-vue3'
 import { debounce } from '../utils/debounce'
+import { defaultChapterTitleRegExpStr } from '../utils/constants'
 
 function getConfig() {
   return {
@@ -28,7 +29,7 @@ if (!bookDetail) {
   window.ipcRenderer.send('change-page', 'bookShelf')
 }
 
-const chapterTitleRegExp = new RegExp(bookDetail?.chapterTitleRegExp || '(?<=\\n)\\s*第[一二三四五六七八九十百千万1234567890]+章\\s*.+', 'g')
+const chapterTitleRegExp = new RegExp(bookDetail?.chapterTitleRegExp || defaultChapterTitleRegExpStr, 'g')
 
 function getChapterTitles(): {
   text: string

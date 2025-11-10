@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { Modal as AModal, Pagination as APagination } from 'ant-design-vue'
 import { useDialog } from 'use-dialog-vue3'
+import { defaultChapterTitleRegExpStr } from '../utils/constants'
 
 const props = defineProps<{
   book: Book
@@ -10,7 +11,7 @@ const props = defineProps<{
 const { visible, close } = useDialog()
 
 const book = window.ipcRenderer.getBookContent(props.book.path)
-const chapterTitleRegExp = new RegExp(props.book.chapterTitleRegExp || '(?<=\\n)\\s*第[一二三四五六七八九十百千万1234567890]+章\\s*.+', 'g')
+const chapterTitleRegExp = new RegExp(props.book.chapterTitleRegExp || defaultChapterTitleRegExpStr, 'g')
 const chapterTitles = Array.from(book.matchAll(chapterTitleRegExp))
 const bookList = window.ipcRenderer.getBookList()
 const bookDetail = bookList.find(b => b.path === props.book.path)
