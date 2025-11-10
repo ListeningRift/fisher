@@ -42,6 +42,7 @@ const selectChapter = (index: number) => {
         v-for="(title, index) in chapterTitles.slice((currentPage - 1) * 100, (currentPage - 1) * 100 + 100)"
         :key="title[0] + index"
         class="chapter-title"
+        :title="title[0].trim()"
         @click="selectChapter(index)"
       >
         {{ title[0].trim() }}
@@ -71,6 +72,9 @@ const selectChapter = (index: number) => {
   line-height: 40px;
   border-bottom: 1px solid #e5e5e5;
   cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   &:hover {
     background-color: #f2f2f2;

@@ -3,8 +3,6 @@ import { computed, defineAsyncComponent, nextTick, onBeforeMount, onMounted, ref
 import { useDialog } from 'use-dialog-vue3'
 import { debounce } from '../utils/debounce'
 
-let { fontSize, color, backgroundColor, pageDownKey, pageUpKey } = getConfig()
-
 function getConfig() {
   return {
     fontSize: window.ipcRenderer.getStoreValue('book.fontSize', 14),
@@ -14,6 +12,13 @@ function getConfig() {
     pageDownKey: window.ipcRenderer.getStoreValue('book.pageDownKey', 'S')
   }
 }
+
+const initialConfig = getConfig()
+const fontSize = ref(initialConfig.fontSize)
+const color = ref(initialConfig.color)
+const backgroundColor = ref(initialConfig.backgroundColor)
+let pageUpKey = initialConfig.pageUpKey
+let pageDownKey = initialConfig.pageDownKey
 
 const lastBook = window.ipcRenderer.getUserData('lastBook', '')
 const book = window.ipcRenderer.getBookContent(lastBook)
@@ -137,71 +142,129 @@ async function calculateParagraphNumber() {
   if (!bookContentRef.value || !bookPageRef.value) return
   const div = document.createElement('div')
   const { width, height } = bookContentRef.value.getBoundingClientRect()
+  const computedStyle = window.getComputedStyle(bookContentRef.value)
   div.style.position = 'absolute'
-  div.style.margin = `0 8px`
+  div.style.padding = `0 8px`
   div.style.left = `-9999px`
   div.style.width = `${width}px`
   div.style.height = `${height}px`
   div.style.overflow = 'hidden'
+  div.style.fontSize = computedStyle.fontSize
+  div.style.lineHeight = computedStyle.lineHeight
+  div.style.fontFamily = computedStyle.fontFamily
+  div.style.fontWeight = computedStyle.fontWeight
+  div.style.letterSpacing = computedStyle.letterSpacing
+  div.style.wordSpacing = computedStyle.wordSpacing
   bookPageRef.value.appendChild(div)
-  pageMark.value = [
-    {
-      paragraphIndex: 0,
-      characterIndex: 0
-    }
-  ]
+
+  pageMark.value = [{ paragraphIndex: 0, characterIndex: 0 }]
 
   for (let i = 0; i < chapter.value.length; i++) {
     const p = document.createElement('p')
+    p.style.marginTop = '12px'
+    p.style.marginBottom = '0'
     p.innerHTML = handleEmptyCharacter(chapter.value[i])
     div.appendChild(p)
-    if (div.scrollHeight > div.clientHeight) {
-      let characters = ''
-      for (let j = 0; j < chapter.value[i].length; j++) {
-        const currentCharacter = handleEmptyCharacter(chapter.value[i][j])
-        characters = characters + currentCharacter
-        p.innerHTML = characters
-        if (div.scrollHeight > div.clientHeight) {
-          const restParagraph = characters.slice(0, -currentCharacter.length)
-          if (restParagraph !== '') {
-            pageMark.value.push({
-              paragraphIndex: i,
-              characterIndex: j
-            })
+
+    while (div.scrollHeight > div.clientHeight) {
+      if (div.children.length === 1) {
+        // 单段落超出，使用二分查找最大可容纳字符数
+        const currentParagraph = chapter.value[i]
+        let left = 0
+        let right = currentParagraph.length
+        let bestSplit = 0
+
+        while (left < right) {
+          const mid = Math.floor((left + right + 1) / 2)
+          p.innerHTML = handleEmptyCharacter(currentParagraph.slice(0, mid))
+
+          if (div.scrollHeight <= div.clientHeight) {
+            bestSplit = mid
+            left = mid
           } else {
-            pageMark.value.push({
-              paragraphIndex: i - 1,
-              characterIndex: chapter.value[i - 1].length
-            })
+            right = mid - 1
           }
+        }
+
+        if (bestSplit > 0) {
+          pageMark.value.push({ paragraphIndex: i, characterIndex: bestSplit })
           div.innerHTML = ''
-          characters = characters.slice(-currentCharacter.length)
-          p.innerHTML = characters
-          div.appendChild(p)
+          const newP = document.createElement('p')
+          newP.style.marginTop = '12px'
+          newP.style.marginBottom = '0'
+          newP.innerHTML = handleEmptyCharacter(currentParagraph.slice(bestSplit))
+          div.appendChild(newP)
+        } else {
+          // 前面段落太多，移除当前段落重新开始
+          div.removeChild(div.lastChild!)
+          const lastPIndex = i - 1
+          pageMark.value.push({ paragraphIndex: lastPIndex, characterIndex: chapter.value[lastPIndex].length })
+          div.innerHTML = ''
+          const newP = document.createElement('p')
+          newP.style.marginTop = '12px'
+          newP.style.marginBottom = '0'
+          newP.innerHTML = handleEmptyCharacter(chapter.value[i])
+          div.appendChild(newP)
+        }
+      } else {
+        // 多段落超出，尝试在最后一个段落中找到最佳分割点
+        const lastP = div.lastChild as HTMLParagraphElement
+        const lastPIndex = i
+        const currentParagraph = chapter.value[lastPIndex]
+
+        // 二分查找当前段落能放下多少字符
+        let left = 0
+        let right = currentParagraph.length
+        let bestSplit = 0
+
+        while (left < right) {
+          const mid = Math.floor((left + right + 1) / 2)
+          lastP.innerHTML = handleEmptyCharacter(currentParagraph.slice(0, mid))
+
+          if (div.scrollHeight <= div.clientHeight) {
+            bestSplit = mid
+            left = mid
+          } else {
+            right = mid - 1
+          }
+        }
+
+        if (bestSplit > 0) {
+          // 能放下部分内容
+          pageMark.value.push({ paragraphIndex: lastPIndex, characterIndex: bestSplit })
+          div.innerHTML = ''
+          const newP = document.createElement('p')
+          newP.style.marginTop = '12px'
+          newP.style.marginBottom = '0'
+          newP.innerHTML = handleEmptyCharacter(currentParagraph.slice(bestSplit))
+          div.appendChild(newP)
+        } else {
+          // 一个字都放不下，移除最后段落
+          div.removeChild(div.lastChild!)
+          const prevPIndex = i - 1
+          pageMark.value.push({ paragraphIndex: prevPIndex, characterIndex: chapter.value[prevPIndex].length })
+          div.innerHTML = ''
+          const newP = document.createElement('p')
+          newP.style.marginTop = '12px'
+          newP.style.marginBottom = '0'
+          newP.innerHTML = handleEmptyCharacter(chapter.value[i])
+          div.appendChild(newP)
         }
       }
     }
-    if (
-      i === chapter.value.length - 1 &&
-      pageMark.value.findIndex(item => item.paragraphIndex === i && item.characterIndex === chapter.value[i].length) === -1
-    ) {
-      pageMark.value.push({
-        paragraphIndex: i,
-        characterIndex: chapter.value[i].length
-      })
-    }
   }
+
+  const lastIndex = chapter.value.length - 1
+  if (lastIndex >= 0 && pageMark.value.findIndex(item => item.paragraphIndex === lastIndex && item.characterIndex === chapter.value[lastIndex].length) === -1) {
+    pageMark.value.push({ paragraphIndex: lastIndex, characterIndex: chapter.value[lastIndex].length })
+  }
+
   bookPageRef.value.removeChild(div)
 
-  // 添加安全检查，确保页面标记至少有两个元素（开始和结束）
   if (pageMark.value.length < 2 && chapter.value.length > 0) {
-    pageMark.value.push({
-      paragraphIndex: 0,
-      characterIndex: chapter.value[0].length
-    })
+    pageMark.value.push({ paragraphIndex: 0, characterIndex: chapter.value[0].length })
   }
 
-  // 确保currentPage.value不超出有效范围
   if (currentPage.value >= pageMark.value.length - 1) {
     currentPage.value = Math.max(0, pageMark.value.length - 2)
   }
@@ -313,7 +376,12 @@ onBeforeMount(() => {
 })
 
 window.ipcRenderer.on('update-settings', () => {
-  ;({ fontSize, color, backgroundColor, pageDownKey, pageUpKey } = getConfig())
+  const config = getConfig()
+  fontSize.value = config.fontSize
+  color.value = config.color
+  backgroundColor.value = config.backgroundColor
+  pageDownKey = config.pageDownKey
+  pageUpKey = config.pageUpKey
   handlePage()
 })
 
@@ -356,7 +424,7 @@ const showChapterDialog = () => {
     ref="bookPageRef"
     class="book-page"
     :style="{
-      fontSize,
+      fontSize: typeof fontSize === 'number' ? `${fontSize}px` : fontSize,
       color,
       backgroundColor
     }"
@@ -374,8 +442,13 @@ const showChapterDialog = () => {
     </div>
     <div class="book-info-bar">
       <div class="book-info-bar-left">
-        <div class="book-info-bar-item book-info-bar-button">
-          <span v-if="chapterTitles[currentChapter]">当前章节：{{ chapterTitles[currentChapter]?.text }}</span>
+        <div class="book-info-bar-item book-info-bar-button chapter-title">
+          <span
+            v-if="chapterTitles[currentChapter]"
+            :title="`当前章节：${chapterTitles[currentChapter]?.text}`"
+          >
+            当前章节：{{ chapterTitles[currentChapter]?.text }}
+          </span>
         </div>
       </div>
       <div class="book-info-bar-right">
@@ -383,23 +456,25 @@ const showChapterDialog = () => {
           class="book-info-bar-item book-info-bar-button"
           @click="showChapterDialog"
         >
-          <span>目录</span>
+          <span title="目录">目录</span>
         </div>
         <div
           class="book-info-bar-item book-info-bar-button"
           :class="{ disabled: !canPrevChapter }"
           @click="prevChapter('start')"
         >
-          <span>上一章</span>
+          <span title="上一章">上一章</span>
         </div>
         <div
           class="book-info-bar-item book-info-bar-button"
           :class="{ disabled: !canNextChapter }"
           @click="nextChapter"
         >
-          <span>下一章</span>
+          <span title="下一章">下一章</span>
         </div>
-        <div class="book-info-bar-item">{{ percent }}%</div>
+        <div class="book-info-bar-item">
+          <span :title="`${percent}%`">{{ percent }}%</span>
+        </div>
       </div>
     </div>
   </div>
@@ -441,6 +516,8 @@ const showChapterDialog = () => {
     display: flex;
     align-items: center;
     margin-right: auto;
+    flex: 1;
+    min-width: 0;
 
     .book-info-bar-item {
       margin-right: 12px;
@@ -449,12 +526,25 @@ const showChapterDialog = () => {
         padding-left: 12px;
         border-left: 1px solid #666666;
       }
+
+      &.chapter-title {
+        flex: 1;
+        min-width: 0;
+
+        span {
+          display: block;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
     }
   }
 
   .book-info-bar-right {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
 
     .book-info-bar-item {
       margin-left: 12px;
@@ -467,6 +557,14 @@ const showChapterDialog = () => {
 
     &:not(:first-child) {
       border-left: 1px solid #666666;
+    }
+
+    span {
+      display: inline-block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
 
     &.book-info-bar-button {
