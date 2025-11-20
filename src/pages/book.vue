@@ -336,14 +336,14 @@ const pageChange = (direction: 'up' | 'down') => {
     if (currentPage.value < pageMark.value.length - 2) {
       currentPage.value++
       setUserDataPageIndex(currentPage.value)
-    } else if (currentChapter.value < chapterTitles.length - 1) {
+    } else if (canNextChapter.value) {
       nextChapter()
     }
   } else {
     if (currentPage.value > 0) {
       currentPage.value--
       setUserDataPageIndex(currentPage.value)
-    } else if (currentChapter.value > -1) {
+    } else if (canPrevChapter.value) {
       prevChapter('end')
     }
   }
