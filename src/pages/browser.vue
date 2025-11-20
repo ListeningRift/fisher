@@ -15,6 +15,10 @@ const urlShow = ref(false)
 const isInputFocused = ref(false)
 const isMouseInUrlBar = ref(false)
 
+// 进度条相关状态
+const loadingProgress = ref(0)
+const isLoading = ref(false)
+
 // 收藏夹相关状态
 const bookmarks = ref<Bookmark[]>([])
 const isDropdownOpen = ref(false)
@@ -104,13 +108,38 @@ const onVisibleChange = (_: any, visible: boolean) => {
 }
 onMounted(() => {
   webviewRef = document.querySelector('.webview')
+
+  // 监听导航开始
   webviewRef.addEventListener('did-start-navigation', (event: any) => {
     if (event.url.startsWith('http') && event.isMainFrame) {
       url.value = event.url
+      isLoading.value = true
+      loadingProgress.value = 0
       scripts.value.forEach(item => {
         if (new RegExp(item.scope).test(url.value)) webviewRef.executeJavaScript(item.scriptContent)
       })
     }
+  })
+
+  // 监听加载进度更新
+  webviewRef.addEventListener('did-start-loading', () => {
+    isLoading.value = true
+    loadingProgress.value = 10
+  })
+
+  // 监听页面加载完成
+  webviewRef.addEventListener('did-stop-loading', () => {
+    loadingProgress.value = 100
+    setTimeout(() => {
+      isLoading.value = false
+      loadingProgress.value = 0
+    }, 300)
+  })
+
+  // 监听页面加载失败
+  webviewRef.addEventListener('did-fail-load', () => {
+    isLoading.value = false
+    loadingProgress.value = 0
   })
 
   window.ipcRenderer.on('visible-change', onVisibleChange)
@@ -139,6 +168,13 @@ const reload = () => {
 
 <template>
   <div class="browser-page">
+    <!-- 加载进度条 -->
+    <div
+      v-if="isLoading"
+      class="loading-progress"
+      :style="{ width: loadingProgress + '%' }"
+    ></div>
+
     <div
       class="url-bar-trigger"
       @mouseenter="handleMouseEnter"
@@ -253,6 +289,17 @@ const reload = () => {
   position: relative;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
+}
+
+.loading-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #1890ff, #40a9ff);
+  transition: width 0.3s ease;
+  z-index: 10001;
+  box-shadow: 0 0 8px rgba(24, 144, 255, 0.6);
 }
 
 .url-bar-trigger {
