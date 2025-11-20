@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
 import { Modal as AModal, Pagination as APagination } from 'ant-design-vue'
 import { useDialog } from 'use-dialog-vue3'
 import { defaultChapterTitleRegExpStr } from '../utils/constants'
@@ -16,7 +16,15 @@ const chapterTitles = Array.from(book.matchAll(chapterTitleRegExp))
 const bookList = window.ipcRenderer.getBookList()
 const bookDetail = bookList.find(b => b.path === props.book.path)
 
-const currentPage = ref(1)
+const currentChapter = bookDetail?.lastChapter ?? -1
+const currentPage = ref(currentChapter >= 0 ? Math.floor(currentChapter / 100) + 1 : 1)
+
+nextTick(() => {
+  if (currentChapter >= 0) {
+    const el = document.querySelector('.chapter-title.active')
+    el?.scrollIntoView({ block: 'center' })
+  }
+})
 
 const selectChapter = (index: number) => {
   const chapterIndex = index + (currentPage.value - 1) * 100
@@ -43,6 +51,7 @@ const selectChapter = (index: number) => {
         v-for="(title, index) in chapterTitles.slice((currentPage - 1) * 100, (currentPage - 1) * 100 + 100)"
         :key="title[0] + index"
         class="chapter-title"
+        :class="{ active: index + (currentPage - 1) * 100 === currentChapter }"
         :title="title[0].trim()"
         @click="selectChapter(index)"
       >
@@ -79,6 +88,11 @@ const selectChapter = (index: number) => {
 
   &:hover {
     background-color: #f2f2f2;
+  }
+
+  &.active {
+    background-color: #e6f7ff;
+    color: #1890ff;
   }
 }
 
