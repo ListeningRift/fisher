@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { Modal as AModal, Pagination as APagination } from 'ant-design-vue'
 import { useDialog } from 'use-dialog-vue3'
 import { defaultChapterTitleRegExpStr } from '../utils/constants'
@@ -18,11 +18,18 @@ const bookDetail = bookList.find(b => b.path === props.book.path)
 
 const currentChapter = bookDetail?.lastChapter ?? -1
 const currentPage = ref(currentChapter >= 0 ? Math.floor(currentChapter / 100) + 1 : 1)
+const chapterTitlesRef = ref<HTMLDivElement>()
 
 nextTick(() => {
   if (currentChapter >= 0) {
     const el = document.querySelector('.chapter-title.active')
     el?.scrollIntoView({ block: 'center' })
+  }
+})
+
+watch(currentPage, () => {
+  if (chapterTitlesRef.value) {
+    chapterTitlesRef.value.scrollTop = 0
   }
 })
 
@@ -46,7 +53,10 @@ const selectChapter = (index: number) => {
     centered
     title="章节目录"
   >
-    <div class="chapter-titles">
+    <div
+      ref="chapterTitlesRef"
+      class="chapter-titles"
+    >
       <div
         v-for="(title, index) in chapterTitles.slice((currentPage - 1) * 100, (currentPage - 1) * 100 + 100)"
         :key="title[0] + index"
