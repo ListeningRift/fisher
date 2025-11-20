@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, nextTick, onBeforeMount, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onBeforeMount, onMounted, ref, watch } from 'vue'
 import { useDialog } from 'use-dialog-vue3'
 import { debounce } from '../utils/debounce'
 import { defaultChapterTitleRegExpStr } from '../utils/constants'
@@ -110,6 +110,14 @@ function setUserDataPageIndex(value: number) {
   window.ipcRenderer.send('setBookList', bookList)
 }
 
+watch(chapter, () => {
+  pageMark.value = [{ paragraphIndex: 0, characterIndex: 0 }]
+  currentPage.value = 0
+  nextTick(() => {
+    calculateParagraphNumber()
+  })
+})
+
 const showChapter = computed(() => {
   // 确保pageMark有足够的元素，避免空白页
   if (pageMark.value.length < 2) {
@@ -121,7 +129,6 @@ const showChapter = computed(() => {
     return []
   }
 
-  // 获取安全的页面索引
   const safeCurrentPage = currentPage.value >= pageMark.value.length - 1 ? pageMark.value.length - 2 : currentPage.value
 
   const startMark = pageMark.value[safeCurrentPage]
